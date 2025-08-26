@@ -1,0 +1,2 @@
+# PlanEats
+AI meal planner
