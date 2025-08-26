@@ -71,6 +71,7 @@ PlanEats AI is built using the **MERN** stack:
 - **Node.js:** Runtime environment to run the backend server.
 - **AI API:** Gemini Open AI API to implement meal planning.
 
+  
 ---
 
 
