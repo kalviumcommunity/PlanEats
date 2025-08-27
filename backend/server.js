@@ -1,3 +1,32 @@
+// Multi-shot prompting endpoint
+// Multi-shot prompting means asking the AI to perform a task and providing multiple examples to guide its response.
+const multiShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
+const multiShotExamples = [
+    "Example 1: For oats and apples, a healthy breakfast could be overnight oats with diced apples, cinnamon, and honey.",
+    "Example 2: For oats and berries, a healthy breakfast could be berry oatmeal with mixed berries, chia seeds, and almond milk."
+];
+
+app.get('/multi-shot', async (req, res) => {
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: multiShotExamples[0] }] },
+                { role: "user", parts: [{ text: multiShotExamples[1] }] },
+                { role: "user", parts: [{ text: multiShotPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            multiShotPrompt,
+            multiShotExamples,
+            geminiResponse: response.data,
+            explanation: "Multi-shot prompting provides the AI with multiple examples to guide its response. This endpoint demonstrates the concept by giving Gemini two examples of healthy breakfasts using oats and apples/berries, then asking for a recipe using oats and bananas."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 // One-shot prompting endpoint
 // One-shot prompting means asking the AI to perform a task and providing a single example to guide its response.
 const oneShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
