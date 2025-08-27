@@ -64,6 +64,16 @@ A curated set of examples used to assess and benchmark the AI’s performance, a
 ## Tech Stack
 
 
+
+- **MongoDB:** For storing recipes, user data, and meal plans in a flexible NoSQL database.
+- **Express.js:** Backend framework to handle API requests and business logic.
+- **React.js:** Frontend library to build a dynamic and responsive user interface.
+- **Node.js:** Runtime environment to run the backend server.
+- **AI API:** Gemini Open AI API to implement meal planning.
+
+  
+---
+
 ## Backend Server (JavaScript)
 
 This backend server is built with Node.js and Express. It demonstrates the use of system and user prompts for managing meal plans, applying the RTFC framework.
@@ -103,6 +113,7 @@ Add a new meal plan: "High Protein Diet" starting September 1, 2025.
 ### Endpoints
 - `GET /prompts`: Returns system/user prompts and RTFC explanation.
 - `POST /mealplans`: Simulates adding a meal plan.
+
 
 
 
