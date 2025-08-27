@@ -1,3 +1,7 @@
+// Utility: Simple token counter (splits by whitespace)
+function countTokens(text) {
+    return text.split(/\s+/).filter(Boolean).length;
+}
 // Chain of thought prompting endpoint
 // Chain of thought prompting encourages the AI to break down its reasoning step-by-step within the prompt.
 const chainOfThoughtPrompt = `Let's think step by step. I want to create a healthy breakfast recipe using oats and bananas. First, list the nutritional benefits of oats and bananas. Next, suggest possible combinations with other healthy ingredients. Finally, provide a detailed recipe.`;
@@ -161,10 +165,19 @@ app.get('/prompts', async (req, res) => {
             ]
         };
         const response = await axios.post(geminiUrl, payload);
+        // Count tokens in prompts and response
+        const promptTokens = countTokens(systemPrompt) + countTokens(userPrompt);
+        let responseTokens = 0;
+        if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
+            responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
+        }
+        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}`);
         res.json({
             systemPrompt,
             userPrompt,
             geminiResponse: response.data,
+            promptTokens,
+            responseTokens,
             rtfcExplanation: {
                 Role: "Defines the assistant's function for PlanEats.",
                 Task: "Specifies what the assistant should do for the user.",
