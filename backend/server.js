@@ -60,6 +60,56 @@ app.post('/mealplans', (req, res) => {
     });
 });
 
+
+
+// Zero-shot prompting endpoint
+// Zero-shot prompting means asking the AI to perform a task without providing any examples.
+// The model relies purely on its pre-trained knowledge.
+
+app.get('/zero-shot', async (req, res) => {
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: zeroShotPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            zeroShotPrompt,
+            geminiResponse: response.data,
+            explanation: "Zero-shot prompting asks the AI to perform a task without examples, relying on its general knowledge. This endpoint demonstrates that by requesting a recipe suggestion with no prior context or examples."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// Zero-shot prompting endpoint
+// Zero-shot prompting means asking the AI to perform a task without providing any examples.
+// The model relies purely on its pre-trained knowledge.
+const zeroShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
+
+app.get('/zero-shot', async (req, res) => {
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: zeroShotPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            zeroShotPrompt,
+            geminiResponse: response.data,
+            explanation: "Zero-shot prompting asks the AI to perform a task without examples, relying on its general knowledge. This endpoint demonstrates that by requesting a recipe suggestion with no prior context or examples."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server running on http://localhost:3000');
 });
