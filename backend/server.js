@@ -1,3 +1,55 @@
+// Dynamic prompting endpoint
+// Dynamic prompting means adjusting the prompt on-the-fly based on user input or context.
+app.post('/dynamic-prompt', async (req, res) => {
+    const { ingredient, preference } = req.body;
+    // Build the prompt dynamically based on user input
+    let dynamicPrompt = `Suggest a healthy breakfast recipe using ${ingredient}`;
+    if (preference) {
+        dynamicPrompt += ` that is ${preference}`;
+    }
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: dynamicPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            dynamicPrompt,
+            geminiResponse: response.data,
+            explanation: "Dynamic prompting adjusts the prompt based on user input or context. This endpoint demonstrates the concept by building a recipe prompt using ingredients and preferences provided in the request body."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// Dynamic prompting endpoint
+// Dynamic prompting means adjusting the prompt on-the-fly based on user input or context.
+app.post('/dynamic-prompt', async (req, res) => {
+    const { ingredient, preference } = req.body;
+    // Build the prompt dynamically based on user input
+    let dynamicPrompt = `Suggest a healthy breakfast recipe using ${ingredient}`;
+    if (preference) {
+        dynamicPrompt += ` that is ${preference}`;
+    }
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: dynamicPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            dynamicPrompt,
+            geminiResponse: response.data,
+            explanation: "Dynamic prompting adjusts the prompt based on user input or context. This endpoint demonstrates the concept by building a recipe prompt using ingredients and preferences provided in the request body."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 // Multi-shot prompting endpoint
 // Multi-shot prompting means asking the AI to perform a task and providing multiple examples to guide its response.
 const multiShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
