@@ -1,0 +1,22 @@
+[
+  {
+    "input": "Suggest a healthy breakfast recipe using oats and bananas.",
+    "expected": "A healthy breakfast could be banana oat pancakes with honey and cinnamon."
+  },
+  {
+    "input": "Suggest a vegan lunch using chickpeas.",
+    "expected": "A vegan lunch could be chickpea salad with tomatoes, cucumber, and lemon dressing."
+  },
+  {
+    "input": "Suggest a gluten-free dinner using rice and vegetables.",
+    "expected": "A gluten-free dinner could be vegetable stir-fry with rice and tofu."
+  },
+  {
+    "input": "Suggest a high-protein snack using Greek yogurt.",
+    "expected": "A high-protein snack could be Greek yogurt parfait with berries and nuts."
+  },
+  {
+    "input": "Suggest a low-carb breakfast using eggs.",
+    "expected": "A low-carb breakfast could be scrambled eggs with spinach and feta cheese."
+  }
+]

@@ -63,7 +63,7 @@ A curated set of examples used to assess and benchmark the AI’s performance, a
 
 ## Tech Stack
 
-PlanEats AI is built using the **MERN** stack:
+
 
 - **MongoDB:** For storing recipes, user data, and meal plans in a flexible NoSQL database.
 - **Express.js:** Backend framework to handle API requests and business logic.
@@ -73,6 +73,47 @@ PlanEats AI is built using the **MERN** stack:
 
   
 ---
+
+## Backend Server (JavaScript)
+
+This backend server is built with Node.js and Express. It demonstrates the use of system and user prompts for managing meal plans, applying the RTFC framework.
+
+### RTFC Framework in Prompts
+- **Role:** The system prompt defines the assistant's function for PlanEats.
+- **Task:** Prompts specify what the assistant should do (e.g., add a meal plan).
+- **Format:** Responses are structured and concise.
+- **Constraints:** Prompts include privacy and guideline requirements.
+
+### Example Prompts
+**System Prompt:**
+```
+You are an AI assistant for PlanEats, helping users manage meal plans and tasks.
+Role: Guide users in organizing, tracking, and updating their meal plans and related tasks.
+Task: Provide clear, actionable responses and ask clarifying questions if needed.
+Format: Respond in concise, structured text.
+Constraints: Ensure user privacy and follow PlanEats guidelines.
+```
+
+**User Prompt:**
+```
+Add a new meal plan: "High Protein Diet" starting September 1, 2025.
+```
+
+### How to Run
+1. Install dependencies:
+	```
+	npm install express
+	```
+2. Start the server:
+	```
+	node backend/server.js
+	```
+3. Access prompts at [http://localhost:3000/prompts](http://localhost:3000/prompts)
+
+### Endpoints
+- `GET /prompts`: Returns system/user prompts and RTFC explanation.
+- `POST /mealplans`: Simulates adding a meal plan.
+
 
 
 
