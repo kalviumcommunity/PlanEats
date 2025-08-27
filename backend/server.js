@@ -1,3 +1,25 @@
+// Chain of thought prompting endpoint
+// Chain of thought prompting encourages the AI to break down its reasoning step-by-step within the prompt.
+const chainOfThoughtPrompt = `Let's think step by step. I want to create a healthy breakfast recipe using oats and bananas. First, list the nutritional benefits of oats and bananas. Next, suggest possible combinations with other healthy ingredients. Finally, provide a detailed recipe.`;
+
+app.get('/chain-of-thought', async (req, res) => {
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: chainOfThoughtPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            chainOfThoughtPrompt,
+            geminiResponse: response.data,
+            explanation: "Chain of thought prompting encourages the AI to break down its reasoning step-by-step. This endpoint demonstrates the concept by asking Gemini to reason through nutritional benefits, ingredient combinations, and then provide a recipe, all in a logical sequence."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 // Dynamic prompting endpoint
 // Dynamic prompting means adjusting the prompt on-the-fly based on user input or context.
 app.post('/dynamic-prompt', async (req, res) => {
