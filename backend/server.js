@@ -1,3 +1,28 @@
+// One-shot prompting endpoint
+// One-shot prompting means asking the AI to perform a task and providing a single example to guide its response.
+const oneShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
+const oneShotExample = "Example: For oats and apples, a healthy breakfast could be overnight oats with diced apples, cinnamon, and honey.";
+
+app.get('/one-shot', async (req, res) => {
+    try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        const payload = {
+            contents: [
+                { role: "user", parts: [{ text: oneShotExample }] },
+                { role: "user", parts: [{ text: oneShotPrompt }] }
+            ]
+        };
+        const response = await axios.post(geminiUrl, payload);
+        res.json({
+            oneShotPrompt,
+            oneShotExample,
+            geminiResponse: response.data,
+            explanation: "One-shot prompting provides the AI with a single example to guide its response. This endpoint demonstrates the concept by giving Gemini an example of a healthy breakfast using oats and apples, then asking for a recipe using oats and bananas."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 const express = require('express');
 const dotenv = require('dotenv');
