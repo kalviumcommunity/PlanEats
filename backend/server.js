@@ -154,7 +154,7 @@ Constraints: Ensure user privacy and follow PlanEats guidelines.
 `;
 
 // Example user prompt
-const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025.`;
+const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025. Respond in JSON format with fields: planName, startDate, meals (array of meal objects with name and ingredients).`;
 
 // Endpoint to get prompts and RTFC explanation
 
@@ -176,14 +176,22 @@ app.get('/prompts', async (req, res) => {
         // Count tokens in prompts and response
         const promptTokens = countTokens(systemPrompt) + countTokens(userPrompt);
         let responseTokens = 0;
+        let structuredOutput = null;
         if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
             responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
+            // Try to parse JSON from the response
+            try {
+                structuredOutput = JSON.parse(response.data.candidates[0].content.parts[0].text);
+            } catch (e) {
+                structuredOutput = null;
+            }
         }
         console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}, Stop Sequences: ${DEFAULT_STOP_SEQUENCES}`);
         res.json({
             systemPrompt,
             userPrompt,
             geminiResponse: response.data,
+            structuredOutput,
             promptTokens,
             responseTokens,
             temperature: DEFAULT_TEMPERATURE,
