@@ -142,6 +142,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const DEFAULT_TEMPERATURE = 0.7; // You can adjust this value for more or less randomness
 const DEFAULT_TOP_P = 0.8; // You can adjust this value for more or less diversity
 const DEFAULT_TOP_K = 40; // You can adjust this value for more or less randomness
+const DEFAULT_STOP_SEQUENCES = ["\n", "End of recipe."]; // Example stop sequences
 
 // System prompt (RTFC: Role, Task, Format, Constraints)
 const systemPrompt = `
@@ -168,7 +169,8 @@ app.get('/prompts', async (req, res) => {
             ],
             temperature: DEFAULT_TEMPERATURE,
             topP: DEFAULT_TOP_P,
-            topK: DEFAULT_TOP_K
+            topK: DEFAULT_TOP_K,
+            stopSequences: DEFAULT_STOP_SEQUENCES
         };
         const response = await axios.post(geminiUrl, payload);
         // Count tokens in prompts and response
@@ -177,7 +179,7 @@ app.get('/prompts', async (req, res) => {
         if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
             responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
         }
-        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}`);
+        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}, Stop Sequences: ${DEFAULT_STOP_SEQUENCES}`);
         res.json({
             systemPrompt,
             userPrompt,
@@ -187,6 +189,7 @@ app.get('/prompts', async (req, res) => {
             temperature: DEFAULT_TEMPERATURE,
             topP: DEFAULT_TOP_P,
             topK: DEFAULT_TOP_K,
+            stopSequences: DEFAULT_STOP_SEQUENCES,
             rtfcExplanation: {
                 Role: "Defines the assistant's function for PlanEats.",
                 Task: "Specifies what the assistant should do for the user.",
