@@ -35,4 +35,9 @@ function cosineSimilarity(a, b) {
     return dot / (normA * normB);
 }
 
-module.exports = { saveEmbedding, searchEmbedding };
+// L2 (Euclidean) distance function
+function l2Distance(a, b) {
+    return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0));
+}
+
+module.exports = { saveEmbedding, searchEmbedding, cosineSimilarity, l2Distance };
