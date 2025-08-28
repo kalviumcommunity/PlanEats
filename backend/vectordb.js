@@ -40,4 +40,9 @@ function l2Distance(a, b) {
     return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0));
 }
 
-module.exports = { saveEmbedding, searchEmbedding, cosineSimilarity, l2Distance };
+// Dot product similarity function
+function dotProduct(a, b) {
+    return a.reduce((sum, val, i) => sum + val * b[i], 0);
+}
+
+module.exports = { saveEmbedding, searchEmbedding, cosineSimilarity, l2Distance, dotProduct };
