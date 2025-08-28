@@ -154,7 +154,17 @@ Constraints: Ensure user privacy and follow PlanEats guidelines.
 `;
 
 // Example user prompt
-const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025. Respond in JSON format with fields: planName, startDate, meals (array of meal objects with name and ingredients).`;
+const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025. Use the function 'createMealPlan' with parameters: planName, startDate, meals (array of meal objects with name and ingredients). Respond with a function call in JSON format.`;
+
+// Function schema for demonstration
+const functionSchema = {
+    name: "createMealPlan",
+    parameters: {
+        planName: "string",
+        startDate: "string",
+        meals: "array"
+    }
+};
 
 // Endpoint to get prompts and RTFC explanation
 
@@ -176,14 +186,14 @@ app.get('/prompts', async (req, res) => {
         // Count tokens in prompts and response
         const promptTokens = countTokens(systemPrompt) + countTokens(userPrompt);
         let responseTokens = 0;
-        let structuredOutput = null;
+        let functionCall = null;
         if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
             responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
-            // Try to parse JSON from the response
+            // Try to parse function call from the response
             try {
-                structuredOutput = JSON.parse(response.data.candidates[0].content.parts[0].text);
+                functionCall = JSON.parse(response.data.candidates[0].content.parts[0].text);
             } catch (e) {
-                structuredOutput = null;
+                functionCall = null;
             }
         }
         console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}, Stop Sequences: ${DEFAULT_STOP_SEQUENCES}`);
@@ -191,7 +201,8 @@ app.get('/prompts', async (req, res) => {
             systemPrompt,
             userPrompt,
             geminiResponse: response.data,
-            structuredOutput,
+            functionSchema,
+            functionCall,
             promptTokens,
             responseTokens,
             temperature: DEFAULT_TEMPERATURE,
