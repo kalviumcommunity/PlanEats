@@ -139,6 +139,10 @@ app.use(express.json());
 dotenv.config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const DEFAULT_TEMPERATURE = 0.7; // You can adjust this value for more or less randomness
+const DEFAULT_TOP_P = 0.8; // You can adjust this value for more or less diversity
+const DEFAULT_TOP_K = 40; // You can adjust this value for more or less randomness
+const DEFAULT_STOP_SEQUENCES = ["\n", "End of recipe."]; // Example stop sequences
 
 // System prompt (RTFC: Role, Task, Format, Constraints)
 const systemPrompt = `
@@ -150,7 +154,17 @@ Constraints: Ensure user privacy and follow PlanEats guidelines.
 `;
 
 // Example user prompt
-const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025.`;
+const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025. Use the function 'createMealPlan' with parameters: planName, startDate, meals (array of meal objects with name and ingredients). Respond with a function call in JSON format.`;
+
+// Function schema for demonstration
+const functionSchema = {
+    name: "createMealPlan",
+    parameters: {
+        planName: "string",
+        startDate: "string",
+        meals: "array"
+    }
+};
 
 // Endpoint to get prompts and RTFC explanation
 
@@ -162,22 +176,39 @@ app.get('/prompts', async (req, res) => {
             contents: [
                 { role: "system", parts: [{ text: systemPrompt }] },
                 { role: "user", parts: [{ text: userPrompt }] }
-            ]
+            ],
+            temperature: DEFAULT_TEMPERATURE,
+            topP: DEFAULT_TOP_P,
+            topK: DEFAULT_TOP_K,
+            stopSequences: DEFAULT_STOP_SEQUENCES
         };
         const response = await axios.post(geminiUrl, payload);
         // Count tokens in prompts and response
         const promptTokens = countTokens(systemPrompt) + countTokens(userPrompt);
         let responseTokens = 0;
+        let functionCall = null;
         if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
             responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
+            // Try to parse function call from the response
+            try {
+                functionCall = JSON.parse(response.data.candidates[0].content.parts[0].text);
+            } catch (e) {
+                functionCall = null;
+            }
         }
-        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}`);
+        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}, Stop Sequences: ${DEFAULT_STOP_SEQUENCES}`);
         res.json({
             systemPrompt,
             userPrompt,
             geminiResponse: response.data,
+            functionSchema,
+            functionCall,
             promptTokens,
             responseTokens,
+            temperature: DEFAULT_TEMPERATURE,
+            topP: DEFAULT_TOP_P,
+            topK: DEFAULT_TOP_K,
+            stopSequences: DEFAULT_STOP_SEQUENCES,
             rtfcExplanation: {
                 Role: "Defines the assistant's function for PlanEats.",
                 Task: "Specifies what the assistant should do for the user.",
