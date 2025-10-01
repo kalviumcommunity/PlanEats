@@ -1,287 +1,81 @@
-// Utility: Simple token counter (splits by whitespace)
-function countTokens(text) {
-    return text.split(/\s+/).filter(Boolean).length;
-}
-// Chain of thought prompting endpoint
-// Chain of thought prompting encourages the AI to break down its reasoning step-by-step within the prompt.
-const chainOfThoughtPrompt = `Let's think step by step. I want to create a healthy breakfast recipe using oats and bananas. First, list the nutritional benefits of oats and bananas. Next, suggest possible combinations with other healthy ingredients. Finally, provide a detailed recipe.`;
-
-app.get('/chain-of-thought', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: chainOfThoughtPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            chainOfThoughtPrompt,
-            geminiResponse: response.data,
-            explanation: "Chain of thought prompting encourages the AI to break down its reasoning step-by-step. This endpoint demonstrates the concept by asking Gemini to reason through nutritional benefits, ingredient combinations, and then provide a recipe, all in a logical sequence."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-// Dynamic prompting endpoint
-// Dynamic prompting means adjusting the prompt on-the-fly based on user input or context.
-app.post('/dynamic-prompt', async (req, res) => {
-    const { ingredient, preference } = req.body;
-    // Build the prompt dynamically based on user input
-    let dynamicPrompt = `Suggest a healthy breakfast recipe using ${ingredient}`;
-    if (preference) {
-        dynamicPrompt += ` that is ${preference}`;
-    }
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: dynamicPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            dynamicPrompt,
-            geminiResponse: response.data,
-            explanation: "Dynamic prompting adjusts the prompt based on user input or context. This endpoint demonstrates the concept by building a recipe prompt using ingredients and preferences provided in the request body."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-// Dynamic prompting endpoint
-// Dynamic prompting means adjusting the prompt on-the-fly based on user input or context.
-app.post('/dynamic-prompt', async (req, res) => {
-    const { ingredient, preference } = req.body;
-    // Build the prompt dynamically based on user input
-    let dynamicPrompt = `Suggest a healthy breakfast recipe using ${ingredient}`;
-    if (preference) {
-        dynamicPrompt += ` that is ${preference}`;
-    }
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: dynamicPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            dynamicPrompt,
-            geminiResponse: response.data,
-            explanation: "Dynamic prompting adjusts the prompt based on user input or context. This endpoint demonstrates the concept by building a recipe prompt using ingredients and preferences provided in the request body."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-// Multi-shot prompting endpoint
-// Multi-shot prompting means asking the AI to perform a task and providing multiple examples to guide its response.
-const multiShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
-const multiShotExamples = [
-    "Example 1: For oats and apples, a healthy breakfast could be overnight oats with diced apples, cinnamon, and honey.",
-    "Example 2: For oats and berries, a healthy breakfast could be berry oatmeal with mixed berries, chia seeds, and almond milk."
-];
-
-app.get('/multi-shot', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: multiShotExamples[0] }] },
-                { role: "user", parts: [{ text: multiShotExamples[1] }] },
-                { role: "user", parts: [{ text: multiShotPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            multiShotPrompt,
-            multiShotExamples,
-            geminiResponse: response.data,
-            explanation: "Multi-shot prompting provides the AI with multiple examples to guide its response. This endpoint demonstrates the concept by giving Gemini two examples of healthy breakfasts using oats and apples/berries, then asking for a recipe using oats and bananas."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-// One-shot prompting endpoint
-// One-shot prompting means asking the AI to perform a task and providing a single example to guide its response.
-const oneShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
-const oneShotExample = "Example: For oats and apples, a healthy breakfast could be overnight oats with diced apples, cinnamon, and honey.";
-
-app.get('/one-shot', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: oneShotExample }] },
-                { role: "user", parts: [{ text: oneShotPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            oneShotPrompt,
-            oneShotExample,
-            geminiResponse: response.data,
-            explanation: "One-shot prompting provides the AI with a single example to guide its response. This endpoint demonstrates the concept by giving Gemini an example of a healthy breakfast using oats and apples, then asking for a recipe using oats and bananas."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 const dotenv = require('dotenv');
-const axios = require('axios');
-const app = express();
-app.use(express.json());
+const path = require('path');
+
+// Load environment variables
 dotenv.config();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const DEFAULT_TEMPERATURE = 0.7; // You can adjust this value for more or less randomness
-const DEFAULT_TOP_P = 0.8; // You can adjust this value for more or less diversity
-const DEFAULT_TOP_K = 40; // You can adjust this value for more or less randomness
-const DEFAULT_STOP_SEQUENCES = ["\n", "End of recipe."]; // Example stop sequences
+// Import routes
+const authRoutes = require('./routes/auth');
+const recipeRoutes = require('./routes/recipes');
+const mealPlanRoutes = require('./routes/mealplans');
+const userRoutes = require('./routes/users');
 
-// System prompt (RTFC: Role, Task, Format, Constraints)
-const systemPrompt = `
-You are an AI assistant for PlanEats, helping users manage meal plans and tasks.
-Role: Guide users in organizing, tracking, and updating their meal plans and related tasks.
-Task: Provide clear, actionable responses and ask clarifying questions if needed.
-Format: Respond in concise, structured text.
-Constraints: Ensure user privacy and follow PlanEats guidelines.
-`;
+// Create Express app
+const app = express();
 
-// Example user prompt
-const userPrompt = `Add a new meal plan: "High Protein Diet" starting September 1, 2025. Use the function 'createMealPlan' with parameters: planName, startDate, meals (array of meal objects with name and ingredients). Respond with a function call in JSON format.`;
+// Middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Function schema for demonstration
-const functionSchema = {
-    name: "createMealPlan",
-    parameters: {
-        planName: "string",
-        startDate: "string",
-        meals: "array"
-    }
-};
+// Database connection
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/planeats', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// Endpoint to get prompts and RTFC explanation
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/mealplans', mealPlanRoutes);
+app.use('/api/users', userRoutes);
 
-// Endpoint to send prompts to Gemini API and get response
-app.get('/prompts', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "system", parts: [{ text: systemPrompt }] },
-                { role: "user", parts: [{ text: userPrompt }] }
-            ],
-            temperature: DEFAULT_TEMPERATURE,
-            topP: DEFAULT_TOP_P,
-            topK: DEFAULT_TOP_K,
-            stopSequences: DEFAULT_STOP_SEQUENCES
-        };
-        const response = await axios.post(geminiUrl, payload);
-        // Count tokens in prompts and response
-        const promptTokens = countTokens(systemPrompt) + countTokens(userPrompt);
-        let responseTokens = 0;
-        let functionCall = null;
-        if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content && response.data.candidates[0].content.parts) {
-            responseTokens = response.data.candidates[0].content.parts.reduce((acc, part) => acc + countTokens(part.text || ''), 0);
-            // Try to parse function call from the response
-            try {
-                functionCall = JSON.parse(response.data.candidates[0].content.parts[0].text);
-            } catch (e) {
-                functionCall = null;
-            }
-        }
-        console.log(`Prompt tokens: ${promptTokens}, Response tokens: ${responseTokens}, Temperature: ${DEFAULT_TEMPERATURE}, Top P: ${DEFAULT_TOP_P}, Top K: ${DEFAULT_TOP_K}, Stop Sequences: ${DEFAULT_STOP_SEQUENCES}`);
-        res.json({
-            systemPrompt,
-            userPrompt,
-            geminiResponse: response.data,
-            functionSchema,
-            functionCall,
-            promptTokens,
-            responseTokens,
-            temperature: DEFAULT_TEMPERATURE,
-            topP: DEFAULT_TOP_P,
-            topK: DEFAULT_TOP_K,
-            stopSequences: DEFAULT_STOP_SEQUENCES,
-            rtfcExplanation: {
-                Role: "Defines the assistant's function for PlanEats.",
-                Task: "Specifies what the assistant should do for the user.",
-                Format: "Indicates how responses should be structured.",
-                Constraints: "Lists rules and limitations for privacy and guidelines."
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'PlanEats API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Simple endpoint to add a meal plan (simulated)
-app.post('/mealplans', (req, res) => {
-    const { plan, startDate } = req.body;
-    // Here you would normally save to a database
-    res.json({
-        message: `Meal plan "${plan}" starting on "${startDate}" added successfully.`,
-        systemPrompt,
-        userPrompt: `Add a new meal plan: "${plan}" starting ${startDate}.`
-    });
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to PlanEats AI API',
+    version: '1.0.0',
+    documentation: '/api/docs'
+  });
 });
 
-
-
-// Zero-shot prompting endpoint
-// Zero-shot prompting means asking the AI to perform a task without providing any examples.
-// The model relies purely on its pre-trained knowledge.
-
-app.get('/zero-shot', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: zeroShotPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            zeroShotPrompt,
-            geminiResponse: response.data,
-            explanation: "Zero-shot prompting asks the AI to perform a task without examples, relying on its general knowledge. This endpoint demonstrates that by requesting a recipe suggestion with no prior context or examples."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: 'Something went wrong!',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
 });
 
-
-// Zero-shot prompting endpoint
-// Zero-shot prompting means asking the AI to perform a task without providing any examples.
-// The model relies purely on its pre-trained knowledge.
-const zeroShotPrompt = "Suggest a healthy breakfast recipe using oats and bananas.";
-
-app.get('/zero-shot', async (req, res) => {
-    try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const payload = {
-            contents: [
-                { role: "user", parts: [{ text: zeroShotPrompt }] }
-            ]
-        };
-        const response = await axios.post(geminiUrl, payload);
-        res.json({
-            zeroShotPrompt,
-            geminiResponse: response.data,
-            explanation: "Zero-shot prompting asks the AI to perform a task without examples, relying on its general knowledge. This endpoint demonstrates that by requesting a recipe suggestion with no prior context or examples."
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.originalUrl
+  });
 });
 
-app.listen(3000, () => {
-    console.log('Server running on http://localhost:3000');
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 PlanEats API server running on port ${PORT}`);
+  console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
