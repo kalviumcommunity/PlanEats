@@ -1,3 +1,9 @@
+# frontend deploy
+ [planEats](https://planeatss.netlify.app/)
+ 
+
+
+
 # PlanEats AI
 
 *Smart meal planning powered by your ingredients and diet preferences.*
