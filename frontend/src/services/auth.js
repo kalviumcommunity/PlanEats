@@ -39,11 +39,14 @@ const authService = {
     return response.data;
   },
 
-  async changePassword(currentPassword, newPassword) {
-    const response = await api.put('/auth/change-password', {
-      currentPassword,
-      newPassword
-    });
+  async changePassword(passwordData) {
+    const response = await api.put('/auth/change-password', passwordData);
+    return response.data;
+  },
+
+  async deleteAccount() {
+    const response = await api.delete('/auth/account');
+    this.logout();
     return response.data;
   },
 

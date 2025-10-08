@@ -62,6 +62,11 @@ export const useAuthStore = create((set, get) => ({
         }
       },
 
+      // Update user directly (for local updates)
+      updateUser: (userData) => {
+        set({ user: userData });
+      },
+
       // Initialize user from storage
       initializeAuth: () => {
         const user = authService.getCurrentUserFromStorage();

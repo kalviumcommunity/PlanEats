@@ -22,10 +22,12 @@ function App() {
 
   useEffect(() => {
     initializeAuth();
+    // Ensure dark theme is always applied
+    document.documentElement.classList.add('dark');
   }, [initializeAuth]);
 
   return (
-    <div className="min-h-screen bg-dark-950 text-white">
+    <div className="min-h-screen bg-dark-950 text-white dark">
       <Navigation />
       
       <Routes>
