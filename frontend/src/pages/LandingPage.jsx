@@ -40,10 +40,10 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center space-y-8 max-w-4xl mx-auto"
+            className="text-center space-y-4 max-w-2xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-black border border-yellow-600 rounded-full px-4 py-2">
+            <div className="inline-flex items-center space-x-2 bg-black border border-yellow-600 rounded-full px-3 py-1">
               <SparklesIcon className="w-4 h-4 text-yellow-400" />
               <span className="text-yellow-400 text-sm font-medium">
                 AI-Powered Meal Planning
@@ -51,13 +51,13 @@ const LandingPage = () => {
             </div>
 
             {/* Main heading */}
-            <div className="space-y-6">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+            <div className="space-y-3">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
                 <span className="text-yellow-400">Smart Meal Planning</span>
                 <br />
                 <span className="text-yellow-100">Powered by AI</span>
               </h1>
-              <p className="text-xl lg:text-2xl text-yellow-200 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-lg lg:text-xl text-yellow-200 leading-relaxed max-w-2xl mx-auto">
                 Transform your available ingredients into personalized meal plans with 
                 AI-powered recipe suggestions and nutrition tracking.
               </p>
@@ -68,17 +68,17 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-3 justify-center"
             >
               <Link 
                 to="/register" 
-                className="btn-primary text-lg px-8 py-4 hover-glow"
+                className="btn-primary text-base px-6 py-3 hover-glow"
               >
                 Start Planning Free
               </Link>
               <Link 
                 to="/recipes" 
-                className="btn-secondary text-lg px-8 py-4"
+                className="btn-secondary text-base px-6 py-3"
               >
                 Browse Recipes
               </Link>
