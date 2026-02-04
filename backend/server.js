@@ -12,6 +12,9 @@ const authRoutes = require('./routes/auth');
 const recipeRoutes = require('./routes/recipes');
 const mealPlanRoutes = require('./routes/mealplans');
 const userRoutes = require('./routes/users');
+const notificationRoutes = require('./routes/notifications');
+const preferenceRoutes = require('./routes/preferences');
+const shoppingListRoutes = require('./routes/shoppingLists');
 
 // Create Express app
 const app = express();
@@ -25,10 +28,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/planeats', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/planeats')
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
 
@@ -37,6 +37,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/mealplans', mealPlanRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/preferences', preferenceRoutes);
+app.use('/api/shopping-lists', shoppingListRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

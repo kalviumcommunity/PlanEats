@@ -68,15 +68,15 @@ const Navigation = () => {
   );
 
   return (
-    <nav className="bg-dark-900/95 backdrop-blur-sm border-b border-dark-800 sticky top-0 z-50">
+    <nav className="bg-black/95 backdrop-blur-sm border-b border-yellow-600 sticky top-0 z-50">
       <div className="container-custom">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <NavLink to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">PE</span>
+            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-sm">PE</span>
             </div>
-            <span className="text-gradient text-xl font-bold hidden sm:block">
+            <span className="text-yellow-400 text-xl font-bold hidden sm:block">
               PlanEats AI
             </span>
           </NavLink>
@@ -92,12 +92,12 @@ const Navigation = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 p-2 hover:bg-dark-800 rounded-lg transition-colors"
+                  className="flex items-center space-x-2 p-2 hover:bg-yellow-900/50 rounded-lg transition-colors border border-yellow-600"
                 >
-                  <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-black" />
                   </div>
-                  <span className="text-dark-200 text-sm">
+                  <span className="text-yellow-200 text-sm">
                     {user?.profile?.firstName || user?.username}
                   </span>
                 </button>
@@ -108,22 +108,22 @@ const Navigation = () => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-48 bg-dark-800 rounded-lg shadow-xl border border-dark-700 py-1"
+                    className="absolute right-0 mt-2 w-48 bg-black rounded-lg shadow-xl border border-yellow-600 py-1"
                   >
                     <NavLink
                       to="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-dark-200 hover:bg-dark-700 hover:text-white"
+                      className="flex items-center px-4 py-2 text-sm text-yellow-200 hover:bg-yellow-900/50 hover:text-yellow-100"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <Cog6ToothIcon className="w-4 h-4 mr-3" />
+                      <Cog6ToothIcon className="w-4 h-4 mr-3 text-yellow-400" />
                       Profile Settings
                     </NavLink>
-                    <hr className="border-dark-700 my-1" />
+                    <hr className="border-yellow-600 my-1" />
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-dark-200 hover:bg-dark-700 hover:text-white"
+                      className="flex items-center w-full px-4 py-2 text-sm text-yellow-200 hover:bg-yellow-900/50 hover:text-yellow-100"
                     >
-                      <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                      <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3 text-yellow-400" />
                       Sign Out
                     </button>
                   </motion.div>
@@ -134,7 +134,7 @@ const Navigation = () => {
                 <NavLink to="/login" className="btn-ghost">
                   Sign In
                 </NavLink>
-                <NavLink to="/register" className="btn-primary">
+                <NavLink to="/register" className="btn-secondary">
                   Get Started
                 </NavLink>
               </div>
@@ -144,12 +144,12 @@ const Navigation = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 hover:bg-dark-800 rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-yellow-900/50 rounded-lg transition-colors border border-yellow-600"
           >
             {isOpen ? (
-              <XMarkIcon className="w-6 h-6" />
+              <XMarkIcon className="w-6 h-6 text-yellow-400" />
             ) : (
-              <Bars3Icon className="w-6 h-6" />
+              <Bars3Icon className="w-6 h-6 text-yellow-400" />
             )}
           </button>
         </div>
@@ -160,20 +160,20 @@ const Navigation = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-dark-800 py-4"
+            className="md:hidden border-t border-yellow-600 py-4"
           >
             <div className="flex flex-col space-y-2">
               <NavItems mobile />
               
               {/* Mobile Auth Section */}
-              <hr className="border-dark-800 my-2" />
+              <hr className="border-yellow-600 my-2" />
               {isAuthenticated() ? (
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 px-3 py-2">
-                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                      <UserIcon className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <UserIcon className="w-5 h-5 text-black" />
                     </div>
-                    <span className="text-dark-200 text-sm">
+                    <span className="text-yellow-200 text-sm">
                       {user?.profile?.firstName || user?.username}
                     </span>
                   </div>
@@ -202,7 +202,7 @@ const Navigation = () => {
                   </NavLink>
                   <NavLink
                     to="/register"
-                    className="btn-primary block text-center"
+                    className="btn-secondary block text-center"
                     onClick={() => setIsOpen(false)}
                   >
                     Get Started

@@ -18,19 +18,49 @@ Role: Generate structured, practical meal plans that maximize ingredient usage w
 Task: Create detailed meal plans with specific recipes, cooking instructions, and nutritional information.
 
 Format: Respond with a structured JSON object containing:
-- title: Meal plan title
-- description: Brief description
+- title: Meal plan title (string)
+- description: Brief description (string)
 - meals: Array of daily meal objects with breakfast, lunch, dinner, and snacks
-- totalNutrition: Estimated nutrition totals
-- shoppingList: Additional ingredients needed
+- totalNutrition: Estimated nutrition totals (optional)
+- additionalIngredients: Additional ingredients needed (optional)
 
-Constraints:
+Constraints for JSON response:
+- Respond ONLY with valid JSON wrapped in code blocks (e.g., \`\`\`json ... \`\`\`)
+- Do not include any text before or after the JSON code block
+- Keep the response concise and focused
+- Do not exceed 4000 tokens in total
+
+Constraints for meal plan:
 - Use provided ingredients as much as possible
 - Respect all dietary restrictions and allergies
 - Ensure nutritional balance
 - Provide realistic cooking times and difficulty levels
 - Include variety across days
-- Suggest reasonable portion sizes`;
+- Suggest reasonable portion sizes
+
+Example response format:
+\`\`\`json
+{
+  "title": "3-Day Chicken Meal Plan",
+  "description": "A balanced meal plan using chicken, rice, and broccoli",
+  "meals": [
+    {
+      "day": 1,
+      "date": "2024-01-01",
+      "dayName": "Monday",
+      "breakfast": {
+        "customMeal": {
+          "name": "Chicken & Rice Bowl",
+          "ingredients": ["chicken", "rice"],
+          "instructions": "Cook chicken and rice, mix together",
+          "nutrition": { "calories": 400, "protein": 30, "carbs": 40, "fat": 15 }
+        },
+        "servings": 1
+      }
+    }
+  ]
+}
+\`\`\``;
   }
 
   // Generate user prompt for meal plan creation
@@ -120,7 +150,7 @@ Constraints:
   // Call Gemini API
   async callGeminiAPI(systemPrompt, userPrompt) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.geminiApiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${this.geminiApiKey}`;
       
       const payload = {
         contents: [
@@ -137,33 +167,47 @@ Constraints:
         }
       };
 
+      console.log('Calling Gemini API with payload:', JSON.stringify(payload, null, 2));
+
       const response = await axios.post(url, payload, {
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 30000
+        timeout: 60000 // Increase timeout to 60 seconds
       });
+
+      console.log('Gemini API response status:', response.status);
+      console.log('Gemini API response data keys:', Object.keys(response.data));
 
       if (response.data && response.data.candidates && response.data.candidates[0]) {
         const content = response.data.candidates[0].content;
         if (content && content.parts && content.parts[0]) {
+          console.log('Gemini API success');
           return {
             success: true,
             content: content.parts[0].text,
-            model: 'gemini-pro'
+            model: 'gemini-2.5-flash-preview-05-20'
+          };
+        } else {
+          console.log('Gemini API response missing content parts');
+          return {
+            success: false,
+            error: 'Invalid response format from Gemini API: missing content parts'
           };
         }
+      } else {
+        console.log('Gemini API response missing candidates');
+        return {
+          success: false,
+          error: 'Invalid response format from Gemini API: missing candidates'
+        };
       }
-
-      return {
-        success: false,
-        error: 'Invalid response format from Gemini API'
-      };
     } catch (error) {
       console.error('Gemini API error:', error.response?.data || error.message);
+      const errorMessage = error.response?.data?.error?.message || error.message;
       return {
         success: false,
-        error: `Gemini API error: ${error.response?.data?.error?.message || error.message}`
+        error: `Gemini API error: ${errorMessage}`
       };
     }
   }
@@ -205,9 +249,17 @@ Constraints:
       };
     } catch (error) {
       console.error('OpenAI API error:', error.response?.data || error.message);
+      // Check if it's a quota error
+      const errorMessage = error.response?.data?.error?.message || error.message;
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('insufficient_quota')) {
+        return {
+          success: false,
+          error: 'OpenAI API quota exceeded. Please try again later or use Gemini as an alternative.'
+        };
+      }
       return {
         success: false,
-        error: `OpenAI API error: ${error.response?.data?.error?.message || error.message}`
+        error: `OpenAI API error: ${errorMessage}`
       };
     }
   }
@@ -215,13 +267,37 @@ Constraints:
   // Parse AI response to meal plan format
   parseAIResponse(content) {
     try {
+      console.log('Raw AI response content length:', content.length);
+      console.log('Raw AI response (first 500 chars):', content.substring(0, 500));
+      
       // Try to extract JSON from the response
-      const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);
-      if (!jsonMatch) {
-        throw new Error('No JSON found in response');
+      // Look for code block markers first
+      let jsonContent = content;
+      
+      // Check if response is wrapped in code blocks
+      const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (codeBlockMatch && codeBlockMatch[1]) {
+        jsonContent = codeBlockMatch[1];
+        console.log('Extracted JSON from code block');
       }
-
-      const parsed = JSON.parse(jsonMatch[0]);
+      
+      // Clean up the JSON content
+      jsonContent = jsonContent.trim();
+      
+      // Try to find the first { and last } to extract the JSON object
+      const firstBrace = jsonContent.indexOf('{');
+      const lastBrace = jsonContent.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        jsonContent = jsonContent.substring(firstBrace, lastBrace + 1);
+        console.log('Extracted JSON object from braces');
+      }
+      
+      console.log('Processing JSON content length:', jsonContent.length);
+      console.log('Processing JSON content (first 500 chars):', jsonContent.substring(0, 500));
+      
+      // Try to parse the JSON
+      const parsed = JSON.parse(jsonContent);
       
       // Validate required fields
       if (!parsed.meals || !Array.isArray(parsed.meals)) {
@@ -271,6 +347,7 @@ Constraints:
       };
     } catch (error) {
       console.error('Parse AI response error:', error);
+      console.error('Error stack:', error.stack);
       return {
         success: false,
         error: `Failed to parse AI response: ${error.message}`
@@ -281,6 +358,8 @@ Constraints:
   // Main function to generate meal plan
   async generateMealPlan(params) {
     try {
+      console.log('Generating meal plan with params:', JSON.stringify(params, null, 2));
+      
       // Validate required parameters
       if (!params.ingredients || params.ingredients.length === 0) {
         return {
@@ -303,20 +382,49 @@ Constraints:
       
       // Try primary AI model first
       if (this.preferredModel === 'gemini' && this.geminiApiKey) {
+        console.log('Trying Gemini API...');
         aiResponse = await this.callGeminiAPI(systemPrompt, userPrompt);
+        console.log('Gemini API response:', JSON.stringify(aiResponse, null, 2));
         
         // Fallback to OpenAI if Gemini fails
         if (!aiResponse.success && this.openaiApiKey) {
           console.log('Gemini failed, trying OpenAI...');
           aiResponse = await this.callOpenAIAPI(systemPrompt, userPrompt);
+          console.log('OpenAI API response:', JSON.stringify(aiResponse, null, 2));
+          
+          // If OpenAI fails due to quota, provide a user-friendly message
+          if (!aiResponse.success && (aiResponse.error.includes('quota') || aiResponse.error.includes('exceeded'))) {
+            return {
+              success: false,
+              error: 'AI service temporarily unavailable due to usage limits. Please try again later or contact support.'
+            };
+          }
         }
       } else if (this.preferredModel === 'openai' && this.openaiApiKey) {
+        console.log('Trying OpenAI API...');
         aiResponse = await this.callOpenAIAPI(systemPrompt, userPrompt);
+        console.log('OpenAI API response:', JSON.stringify(aiResponse, null, 2));
         
-        // Fallback to Gemini if OpenAI fails
+        // Check if OpenAI failed due to quota
+        if (!aiResponse.success && (aiResponse.error.includes('quota') || aiResponse.error.includes('exceeded'))) {
+          // Try to fall back to Gemini
+          if (this.geminiApiKey) {
+            console.log('OpenAI quota exceeded, trying Gemini...');
+            aiResponse = await this.callGeminiAPI(systemPrompt, userPrompt);
+            console.log('Gemini API response:', JSON.stringify(aiResponse, null, 2));
+          } else {
+            return {
+              success: false,
+              error: 'AI service temporarily unavailable due to usage limits. Please try again later.'
+            };
+          }
+        }
+        
+        // Fallback to Gemini if OpenAI fails for other reasons
         if (!aiResponse.success && this.geminiApiKey) {
           console.log('OpenAI failed, trying Gemini...');
           aiResponse = await this.callGeminiAPI(systemPrompt, userPrompt);
+          console.log('Gemini API response:', JSON.stringify(aiResponse, null, 2));
         }
       } else {
         return {
@@ -325,12 +433,24 @@ Constraints:
         };
       }
 
+      // If both attempts failed, return the last error
       if (!aiResponse.success) {
+        console.log('Both AI services failed, returning error:', aiResponse.error);
+        // Provide a more user-friendly error message
+        if (aiResponse.error.includes('timeout')) {
+          return {
+            success: false,
+            error: 'AI service is taking too long to respond. Please try again or contact support.'
+          };
+        }
         return aiResponse;
       }
 
       // Parse the AI response
+      console.log('Parsing AI response...');
       const parsedResponse = this.parseAIResponse(aiResponse.content);
+      console.log('Parsed response:', JSON.stringify(parsedResponse, null, 2));
+      
       if (!parsedResponse.success) {
         return parsedResponse;
       }

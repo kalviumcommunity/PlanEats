@@ -34,7 +34,7 @@ const LandingPage = () => {
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center hero-gradient">
+      <section className="relative min-h-screen flex items-center bg-black">
         <div className="container-custom relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -43,9 +43,9 @@ const LandingPage = () => {
             className="text-center space-y-8 max-w-4xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-4 py-2">
-              <SparklesIcon className="w-4 h-4 text-primary-400" />
-              <span className="text-primary-400 text-sm font-medium">
+            <div className="inline-flex items-center space-x-2 bg-black border border-yellow-600 rounded-full px-4 py-2">
+              <SparklesIcon className="w-4 h-4 text-yellow-400" />
+              <span className="text-yellow-400 text-sm font-medium">
                 AI-Powered Meal Planning
               </span>
             </div>
@@ -53,11 +53,11 @@ const LandingPage = () => {
             {/* Main heading */}
             <div className="space-y-6">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                <span className="text-gradient">Smart Meal Planning</span>
+                <span className="text-yellow-400">Smart Meal Planning</span>
                 <br />
-                <span className="text-white">Powered by AI</span>
+                <span className="text-yellow-100">Powered by AI</span>
               </h1>
-              <p className="text-xl lg:text-2xl text-dark-300 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-xl lg:text-2xl text-yellow-200 leading-relaxed max-w-3xl mx-auto">
                 Transform your available ingredients into personalized meal plans with 
                 AI-powered recipe suggestions and nutrition tracking.
               </p>
@@ -83,28 +83,12 @@ const LandingPage = () => {
                 Browse Recipes
               </Link>
             </motion.div>
-
-            {/* Stats */}
-            <div className="flex items-center justify-center space-x-8 pt-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">10K+</div>
-                <div className="text-sm text-dark-400">Recipes</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary-400">5K+</div>
-                <div className="text-sm text-dark-400">Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">100K+</div>
-                <div className="text-sm text-dark-400">Meal Plans</div>
-              </div>
-            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-dark-900/50">
+      <section className="py-20 bg-black">
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -112,10 +96,10 @@ const LandingPage = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gradient mb-4">
+            <h2 className="text-4xl font-bold text-yellow-400 mb-4">
               Everything you need for smart meal planning
             </h2>
-            <p className="text-xl text-dark-300 max-w-2xl mx-auto">
+            <p className="text-xl text-yellow-200 max-w-2xl mx-auto">
               Discover how AI can revolutionize your approach to nutrition and meal preparation
             </p>
           </motion.div>
@@ -129,11 +113,11 @@ const LandingPage = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="card p-6 hover-lift space-y-4"
               >
-                <div className="w-12 h-12 bg-primary-500/10 rounded-lg flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-primary-400" />
+                <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center border border-yellow-600">
+                  <feature.icon className="w-6 h-6 text-yellow-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">{feature.title}</h3>
-                <p className="text-dark-300">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-yellow-100">{feature.title}</h3>
+                <p className="text-yellow-200">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -141,7 +125,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-20 bg-black">
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -149,10 +133,10 @@ const LandingPage = () => {
             transition={{ duration: 0.6 }}
             className="card-glass p-8 md:p-12 text-center space-y-6"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gradient">
+            <h2 className="text-3xl md:text-4xl font-bold text-yellow-400">
               Ready to transform your meal planning?
             </h2>
-            <p className="text-xl text-dark-300 max-w-2xl mx-auto">
+            <p className="text-xl text-yellow-200 max-w-2xl mx-auto">
               Join thousands of users who have revolutionized their approach to nutrition with AI-powered meal planning.
             </p>
             <Link 

@@ -101,8 +101,7 @@ userSchema.virtual('profile.fullName').get(function() {
 });
 
 // Index for faster queries
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// Note: email and username are already indexed via unique: true in the schema
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function(next) {
