@@ -3,12 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const { auth, rateLimit } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 const router = express.Router();
-
-// Apply rate limiting to auth routes
-router.use(rateLimit(20, 15 * 60 * 1000)); // 20 requests per 15 minutes
 
 // Validation rules
 const registerValidation = [
@@ -24,8 +21,6 @@ const registerValidation = [
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
 
 const loginValidation = [
@@ -45,8 +40,6 @@ const changePasswordValidation = [
   body('newPassword')
     .isLength({ min: 6 })
     .withMessage('New password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('New password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
 
 // Helper function to generate JWT token
