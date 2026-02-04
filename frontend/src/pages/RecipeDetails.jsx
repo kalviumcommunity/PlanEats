@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
@@ -9,7 +9,9 @@ import {
   HeartIcon,
   PrinterIcon,
   ShareIcon,
-  SparklesIcon
+  SparklesIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import recipeService from '../services/recipes';
@@ -25,6 +27,7 @@ const RecipeDetails = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [expandedInstructions, setExpandedInstructions] = useState({});
   const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
@@ -38,8 +41,7 @@ const RecipeDetails = () => {
       setLoading(true);
       const data = await recipeService.getRecipe(id);
       setRecipe(data.recipe);
-      // Check if recipe is in user's favorites (you'd need to implement this check)
-      // setIsFavorited(checkIfFavorited(data.recipe._id));
+      setIsFavorited(data.recipe.isFavorite || false);
     } catch (error) {
       console.error('Error fetching recipe:', error);
       toast.error('Failed to load recipe');
@@ -49,37 +51,40 @@ const RecipeDetails = () => {
     }
   };
 
-  const handleToggleFavorite = async () => {
+  const toggleFavorite = async () => {
     if (!isAuthenticated()) {
-      toast.error('Please log in to favorite recipes');
+      toast.error('Please sign in to save recipes');
       return;
     }
 
     try {
-      await recipeService.toggleFavorite(recipe._id);
+      await recipeService.toggleFavorite(id);
       setIsFavorited(!isFavorited);
-      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
+      toast.success(isFavorited ? 'Recipe removed from favorites' : 'Recipe saved to favorites!');
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error('Failed to update favorite status');
+      toast.error('Failed to save recipe');
     }
   };
 
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
+  const submitReview = async () => {
     if (!isAuthenticated()) {
-      toast.error('Please log in to add a review');
+      toast.error('Please sign in to review recipes');
+      return;
+    }
+
+    if (!reviewData.comment.trim()) {
+      toast.error('Please enter a comment');
       return;
     }
 
     try {
       setSubmittingReview(true);
-      await recipeService.addReview(recipe._id, reviewData.rating, reviewData.comment);
-      toast.success('Review added successfully!');
+      await recipeService.addReview(id, reviewData.rating, reviewData.comment);
+      toast.success('Review submitted successfully!');
       setShowReviewForm(false);
       setReviewData({ rating: 5, comment: '' });
-      // Refresh recipe to show new review
-      fetchRecipe();
+      fetchRecipe(); // Refresh the recipe data
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error('Failed to submit review');
@@ -88,41 +93,90 @@ const RecipeDetails = () => {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: recipe.title,
-          text: recipe.description,
-          url: window.location.href,
-        });
-      } catch (error) {
-        // User cancelled sharing
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Recipe link copied to clipboard!');
-    }
+  const toggleInstructionStep = (stepNumber) => {
+    setExpandedInstructions(prev => ({
+      ...prev,
+      [stepNumber]: !prev[stepNumber]
+    }));
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const NutritionalInfo = ({ nutrition, servings }) => (
+    <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Nutritional Information (per serving)</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-600">{nutrition?.calories || 0}</p>
+          <p className="text-sm text-gray-600">Calories</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-600">{nutrition?.protein || 0}g</p>
+          <p className="text-sm text-gray-600">Protein</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-600">{nutrition?.carbohydrates || 0}g</p>
+          <p className="text-sm text-gray-600">Carbs</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-600">{nutrition?.fat || 0}g</p>
+          <p className="text-sm text-gray-600">Fat</p>
+        </div>
+      </div>
+      {nutrition?.fiber && (
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-700">{nutrition.fiber}g</p>
+            <p className="text-sm text-gray-600">Fiber</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-700">{nutrition.sugar}g</p>
+            <p className="text-sm text-gray-600">Sugar</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-700">{nutrition.sodium}mg</p>
+            <p className="text-sm text-gray-600">Sodium</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-700">{nutrition.cholesterol}mg</p>
+            <p className="text-sm text-gray-600">Cholesterol</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const ReviewCard = ({ review }) => (
+    <div className="bg-white rounded-lg p-4 border border-gray-100">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+            <span className="text-orange-600 text-sm font-medium">
+              {review.user?.username?.charAt(0)?.toUpperCase() || 'A'}
+            </span>
+          </div>
+          <span className="font-medium text-gray-900">{review.user?.username || 'Anonymous'}</span>
+        </div>
+        <div className="flex items-center">
+          {[...Array(5)].map((_, i) => (
+            <StarIconSolid
+              key={i}
+              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+            />
+          ))}
+        </div>
+      </div>
+      <p className="text-gray-600 text-sm">{review.comment}</p>
+      <p className="text-xs text-gray-400 mt-2">
+        {new Date(review.createdAt).toLocaleDateString()}
+      </p>
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container-custom">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-dark-800 rounded w-1/4"></div>
-            <div className="h-64 bg-dark-800 rounded"></div>
-            <div className="space-y-4">
-              <div className="h-6 bg-dark-800 rounded w-3/4"></div>
-              <div className="h-4 bg-dark-800 rounded w-1/2"></div>
-              <div className="h-4 bg-dark-800 rounded w-2/3"></div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading recipe details...</p>
         </div>
       </div>
     );
@@ -130,392 +184,292 @@ const RecipeDetails = () => {
 
   if (!recipe) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container-custom">
-          <div className="text-center">
-            <SparklesIcon className="w-16 h-16 text-dark-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-dark-300 mb-2">Recipe not found</h2>
-            <button
-              onClick={() => navigate('/recipes')}
-              className="btn-primary"
-            >
-              Back to Recipes
-            </button>
-          </div>
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <SparklesIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Recipe not found</h3>
+          <p className="text-gray-600 mb-4">The recipe you're looking for doesn't exist or has been removed.</p>
+          <Link
+            to="/recipes"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Back to Recipes
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container-custom">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="btn-ghost mb-6 flex items-center space-x-2"
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
         >
-          <ArrowLeftIcon className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Recipe Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="card p-6"
-            >
-              {/* Recipe Image */}
-              <div className="relative h-64 md:h-80 rounded-lg overflow-hidden mb-6">
-                {recipe.images && recipe.images.length > 0 ? (
-                  <img
-                    src={recipe.images.find(img => img.isPrimary)?.url || recipe.images[0]?.url}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-dark-800 flex items-center justify-center">
-                    <SparklesIcon className="w-16 h-16 text-dark-600" />
-                  </div>
-                )}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center text-orange-600 hover:text-orange-700 mb-4"
+          >
+            <ArrowLeftIcon className="h-5 w-5 mr-2" />
+            Back to Recipes
+          </button>
+          
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">{recipe.title}</h1>
+              <p className="text-gray-600 text-lg mb-6">{recipe.description}</p>
+              
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
+                <div className="flex items-center">
+                  <UserGroupIcon className="h-5 w-5 mr-2 text-orange-500" />
+                  <span>{recipe.servings} servings</span>
+                </div>
+                <div className="flex items-center">
+                  <ClockIcon className="h-5 w-5 mr-2 text-orange-500" />
+                  <span>{recipe.prepTime}m prep, {recipe.cookTime}m cook</span>
+                </div>
+                <div className="flex items-center">
+                  <StarIcon className="h-5 w-5 mr-2 text-orange-500" />
+                  <span>{recipe.rating?.average?.toFixed(1) || 'New'} ({recipe.rating?.count || 0} reviews)</span>
+                </div>
+                <div className="flex items-center">
+                  <SparklesIcon className="h-5 w-5 mr-2 text-orange-500" />
+                  <span className="capitalize">{recipe.difficulty}</span>
+                </div>
               </div>
-
-              {/* Recipe Info */}
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">{recipe.title}</h1>
-                    <p className="text-dark-300">{recipe.description}</p>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={handleToggleFavorite}
-                      className="p-2 hover:bg-dark-800 rounded-lg transition-colors"
-                    >
-                      {isFavorited ? (
-                        <HeartIconSolid className="w-6 h-6 text-red-500" />
-                      ) : (
-                        <HeartIcon className="w-6 h-6 text-dark-400 hover:text-red-500" />
-                      )}
-                    </button>
-                    <button
-                      onClick={handleShare}
-                      className="p-2 hover:bg-dark-800 rounded-lg transition-colors"
-                    >
-                      <ShareIcon className="w-6 h-6 text-dark-400 hover:text-white" />
-                    </button>
-                    <button
-                      onClick={handlePrint}
-                      className="p-2 hover:bg-dark-800 rounded-lg transition-colors"
-                    >
-                      <PrinterIcon className="w-6 h-6 text-dark-400 hover:text-white" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Recipe Meta */}
-                <div className="flex flex-wrap items-center gap-6 text-dark-300">
-                  <div className="flex items-center space-x-2">
-                    <ClockIcon className="w-5 h-5" />
-                    <span>Prep: {recipe.prepTime}m</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <ClockIcon className="w-5 h-5" />
-                    <span>Cook: {recipe.cookTime}m</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <UserGroupIcon className="w-5 h-5" />
-                    <span>{recipe.servings} servings</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <StarIcon className="w-5 h-5" />
-                    <span>{recipe.rating?.average?.toFixed(1) || 'No ratings'} ({recipe.rating?.count || 0} reviews)</span>
-                  </div>
-                </div>
-
-                {/* Dietary Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {recipe.dietaryTags?.map(tag => (
-                    <span key={tag} className="badge badge-primary">
-                      {tag}
-                    </span>
-                  ))}
-                  <span className={`badge ${
-                    recipe.difficulty === 'easy' ? 'badge-success' :
-                    recipe.difficulty === 'medium' ? 'badge-warning' :
-                    'badge-danger'
-                  }`}>
-                    {recipe.difficulty}
+              
+              <div className="flex flex-wrap gap-2 mb-6">
+                {recipe.dietaryTags?.map(tag => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800 rounded-full"
+                  >
+                    {tag}
                   </span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Ingredients */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card p-6"
-            >
-              <h2 className="text-2xl font-bold text-white mb-4">Ingredients</h2>
-              <div className="space-y-3">
-                {recipe.ingredients?.map((ingredient, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-2 hover:bg-dark-800 rounded">
-                    <div className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0"></div>
-                    <span className="text-dark-200">
-                      <span className="font-medium">{ingredient.amount} {ingredient.unit}</span>
-                      {' '}
-                      <span>{ingredient.name}</span>
-                      {ingredient.notes && (
-                        <span className="text-dark-400 text-sm"> ({ingredient.notes})</span>
-                      )}
-                    </span>
-                  </div>
+                ))}
+                {recipe.cuisine && (
+                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {recipe.cuisine}
+                  </span>
+                )}
+                {recipe.mealType?.map(type => (
+                  <span
+                    key={type}
+                    className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full"
+                  >
+                    {type}
+                  </span>
                 ))}
               </div>
-            </motion.div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <button
+                onClick={toggleFavorite}
+                className={`p-3 rounded-full ${
+                  isFavorited
+                    ? 'bg-red-100 text-red-500 hover:bg-red-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600'
+                } transition-colors`}
+              >
+                {isFavorited ? (
+                  <HeartIconSolid className="h-6 w-6" />
+                ) : (
+                  <HeartIcon className="h-6 w-6" />
+                )}
+              </button>
+              <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
+                <PrinterIcon className="h-6 w-6" />
+              </button>
+              <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
+                <ShareIcon className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Ingredients and Nutrition */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Ingredients */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Ingredients</h2>
+              <ul className="space-y-3">
+                {recipe.ingredients?.map((ingredient, index) => (
+                  <li key={index} className="flex items-center">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                    <span className="text-gray-700">
+                      {ingredient.amount} {ingredient.unit} {ingredient.name}
+                      {ingredient.notes && ` (${ingredient.notes})`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {/* Instructions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="card p-6"
-            >
-              <h2 className="text-2xl font-bold text-white mb-4">Instructions</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
               <div className="space-y-4">
                 {recipe.instructions?.map((instruction, index) => (
-                  <div key={index} className="flex space-x-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      {instruction.step || index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-dark-200 leading-relaxed">{instruction.description}</p>
-                      {(instruction.duration || instruction.temperature) && (
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-dark-400">
-                          {instruction.duration && (
-                            <span>⏱️ {instruction.duration} min</span>
-                          )}
-                          {instruction.temperature && (
-                            <span>🌡️ {instruction.temperature}°F</span>
-                          )}
+                  <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                    <button
+                      onClick={() => toggleInstructionStep(instruction.step)}
+                      className="flex items-center justify-between w-full text-left"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-white text-sm font-medium">{instruction.step}</span>
                         </div>
+                        <span className="font-medium text-gray-900">
+                          {expandedInstructions[instruction.step] ? instruction.description : instruction.description.substring(0, 80) + '...'}
+                        </span>
+                      </div>
+                      {expandedInstructions[instruction.step] ? (
+                        <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronDownIcon className="h-5 w-5 text-gray-400" />
                       )}
-                    </div>
+                    </button>
+                    {expandedInstructions[instruction.step] && (
+                      <div className="mt-2 ml-11 text-gray-600">
+                        {instruction.description}
+                        {instruction.duration && (
+                          <p className="text-sm text-gray-500 mt-1">Duration: {instruction.duration} minutes</p>
+                        )}
+                        {instruction.temperature && (
+                          <p className="text-sm text-gray-500 mt-1">Temperature: {instruction.temperature}°F</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Reviews Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="card p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Reviews</h2>
-                {isAuthenticated() && (
-                  <button
-                    onClick={() => setShowReviewForm(!showReviewForm)}
-                    className="btn-primary"
-                  >
-                    Add Review
-                  </button>
-                )}
+            {/* Reviews */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Reviews</h2>
+                <span className="text-sm text-gray-600">
+                  {recipe.reviews?.length || 0} reviews
+                </span>
               </div>
-
-              {/* Add Review Form */}
-              {showReviewForm && (
-                <form onSubmit={handleSubmitReview} className="mb-6 p-4 border border-dark-700 rounded-lg">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="form-label">Rating</label>
-                      <div className="flex items-center space-x-2">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setReviewData(prev => ({ ...prev, rating: star }))}
-                            className="text-2xl hover:scale-110 transition-transform"
-                          >
-                            {star <= reviewData.rating ? (
-                              <StarIconSolid className="w-6 h-6 text-yellow-500" />
-                            ) : (
-                              <StarIcon className="w-6 h-6 text-dark-600" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="form-label">Comment (optional)</label>
-                      <textarea
-                        value={reviewData.comment}
-                        onChange={(e) => setReviewData(prev => ({ ...prev, comment: e.target.value }))}
-                        className="input h-24 resize-none"
-                        placeholder="Share your thoughts about this recipe..."
-                      />
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        type="submit"
-                        disabled={submittingReview}
-                        className="btn-primary disabled:opacity-50"
-                      >
-                        {submittingReview ? 'Submitting...' : 'Submit Review'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowReviewForm(false)}
-                        className="btn-secondary"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              )}
-
-              {/* Reviews List */}
-              <div className="space-y-4">
-                {recipe.reviews?.length > 0 ? (
-                  recipe.reviews.map((review, index) => (
-                    <div key={index} className="border-b border-dark-700 pb-4 last:border-b-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
-                              {review.user?.username?.[0]?.toUpperCase() || 'U'}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-white">
-                              {review.user?.profile?.firstName || review.user?.username}
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <div className="flex items-center">
-                                {[...Array(5)].map((_, i) => (
-                                  i < review.rating ? (
-                                    <StarIconSolid key={i} className="w-4 h-4 text-yellow-500" />
-                                  ) : (
-                                    <StarIcon key={i} className="w-4 h-4 text-dark-600" />
-                                  )
-                                ))}
-                              </div>
-                              <span className="text-sm text-dark-400">
-                                {new Date(review.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {review.comment && (
-                        <p className="text-dark-300 ml-11">{review.comment}</p>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-dark-400 text-center py-8">No reviews yet. Be the first to review this recipe!</p>
-                )}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Nutrition Info */}
-            {recipe.nutrition && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="card p-6"
-              >
-                <h3 className="text-xl font-bold text-white mb-4">Nutrition (per serving)</h3>
-                <div className="space-y-3">
-                  {recipe.nutrition.calories && (
-                    <div className="flex justify-between">
-                      <span className="text-dark-300">Calories</span>
-                      <span className="text-white font-medium">{Math.round(recipe.nutrition.calories / recipe.servings)}</span>
-                    </div>
-                  )}
-                  {recipe.nutrition.protein && (
-                    <div className="flex justify-between">
-                      <span className="text-dark-300">Protein</span>
-                      <span className="text-white font-medium">{Math.round(recipe.nutrition.protein / recipe.servings)}g</span>
-                    </div>
-                  )}
-                  {recipe.nutrition.carbohydrates && (
-                    <div className="flex justify-between">
-                      <span className="text-dark-300">Carbs</span>
-                      <span className="text-white font-medium">{Math.round(recipe.nutrition.carbohydrates / recipe.servings)}g</span>
-                    </div>
-                  )}
-                  {recipe.nutrition.fat && (
-                    <div className="flex justify-between">
-                      <span className="text-dark-300">Fat</span>
-                      <span className="text-white font-medium">{Math.round(recipe.nutrition.fat / recipe.servings)}g</span>
-                    </div>
-                  )}
-                  {recipe.nutrition.fiber && (
-                    <div className="flex justify-between">
-                      <span className="text-dark-300">Fiber</span>
-                      <span className="text-white font-medium">{Math.round(recipe.nutrition.fiber / recipe.servings)}g</span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Recipe Author */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="card p-6"
-            >
-              <h3 className="text-xl font-bold text-white mb-4">Recipe by</h3>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    {recipe.author?.username?.[0]?.toUpperCase() || 'A'}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-medium text-white">
-                    {recipe.author?.profile?.fullName || recipe.author?.username}
-                  </p>
-                  <p className="text-sm text-dark-400">Recipe Author</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Equipment */}
-            {recipe.equipment && recipe.equipment.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-                className="card p-6"
-              >
-                <h3 className="text-xl font-bold text-white mb-4">Equipment Needed</h3>
-                <div className="space-y-2">
-                  {recipe.equipment.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-secondary-500 rounded-full"></div>
-                      <span className="text-dark-300">{item}</span>
-                    </div>
+              
+              {recipe.reviews && recipe.reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {recipe.reviews.map((review, index) => (
+                    <ReviewCard key={index} review={review} />
                   ))}
                 </div>
-              </motion.div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <StarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p>No reviews yet. Be the first to review this recipe!</p>
+                </div>
+              )}
+              
+              {isAuthenticated() && (
+                <div className="mt-6">
+                  {!showReviewForm ? (
+                    <button
+                      onClick={() => setShowReviewForm(true)}
+                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    >
+                      Write a Review
+                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                        <div className="flex space-x-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => setReviewData(prev => ({ ...prev, rating: star }))}
+                              className={`p-1 ${star <= reviewData.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                            >
+                              <StarIconSolid className="h-6 w-6" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+                        <textarea
+                          value={reviewData.comment}
+                          onChange={(e) => setReviewData(prev => ({ ...prev, comment: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors"
+                          rows="4"
+                          placeholder="Share your thoughts about this recipe..."
+                        />
+                      </div>
+                      
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={submitReview}
+                          disabled={submittingReview}
+                          className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                        >
+                          {submittingReview ? 'Submitting...' : 'Submit Review'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowReviewForm(false);
+                            setReviewData({ rating: 5, comment: '' });
+                          }}
+                          className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Nutrition and Tips */}
+          <div className="space-y-8">
+            <NutritionalInfo nutrition={recipe.nutrition} servings={recipe.servings} />
+            
+            {(recipe.tips || recipe.variations) && (
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips & Variations</h3>
+                {recipe.tips && (
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Tips:</h4>
+                    <ul className="space-y-2">
+                      {recipe.tips.map((tip, index) => (
+                        <li key={index} className="flex items-start">
+                          <SparklesIcon className="h-4 w-4 text-orange-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <span className="text-gray-700">{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {recipe.variations && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Variations:</h4>
+                    <ul className="space-y-2">
+                      {recipe.variations.map((variation, index) => (
+                        <li key={index} className="flex items-start">
+                          <SparklesIcon className="h-4 w-4 text-orange-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <span className="text-gray-700">{variation}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

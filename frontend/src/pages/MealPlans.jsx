@@ -48,8 +48,10 @@ const MealPlans = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this meal plan?')) return;
-    
+    if (!window.confirm('Are you sure you want to delete this meal plan?')) {
+      return;
+    }
+
     try {
       await mealPlanService.deleteMealPlan(id);
       setMealPlans(prev => prev.filter(plan => plan._id !== id));
@@ -60,307 +62,333 @@ const MealPlans = () => {
     }
   };
 
-  const handleToggleFavorite = async (id) => {
-    try {
-      await mealPlanService.toggleFavorite(id);
-      setMealPlans(prev => prev.map(plan => 
-        plan._id === id 
-          ? { ...plan, isFavorite: !plan.isFavorite }
-          : plan
-      ));
-      toast.success('Meal plan updated');
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast.error('Failed to update meal plan');
+  const filteredMealPlans = mealPlans.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         plan.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || plan.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'draft': return 'bg-yellow-100 text-yellow-800';
+      case 'paused': return 'bg-gray-100 text-gray-800';
+      case 'archived': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredMealPlans = mealPlans.filter(plan => {
-    const matchesSearch = plan.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         plan.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (filterStatus === 'all') return matchesSearch;
-    if (filterStatus === 'favorites') return matchesSearch && plan.isFavorite;
-    if (filterStatus === 'active') return matchesSearch && plan.status === 'active';
-    if (filterStatus === 'completed') return matchesSearch && plan.status === 'completed';
-    
-    return matchesSearch;
-  });
-
-  const MealPlanCard = ({ plan }) => {
-    const startDate = new Date(plan.startDate);
-    const endDate = new Date(plan.endDate);
-    const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card hover-lift hover-glow overflow-hidden"
-      >
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white mb-2 truncate">
-                {plan.name || 'Meal Plan'}
-              </h3>
-              <p className="text-dark-300 text-sm mb-3 line-clamp-2">
-                {plan.description || 'AI-generated meal plan tailored to your preferences'}
-              </p>
+  const MealPlanCard = ({ plan }) => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group"
+    >
+      <div className="h-40 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+        <div className="text-center text-orange-600">
+          <CalendarIcon className="h-12 w-12 mx-auto" />
+          <p className="text-sm font-medium mt-2">{plan.title}</p>
+        </div>
+      </div>
+      
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-2">
+          <Link to={`/meal-plans/${plan._id}`}>
+            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+              {plan.title}
+            </h3>
+          </Link>
+          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(plan.status)}`}>
+            {plan.status}
+          </span>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {plan.description}
+        </p>
+        
+        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <CalendarIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{new Date(plan.startDate).toLocaleDateString()}</span>
             </div>
-            <button
-              onClick={() => handleToggleFavorite(plan._id)}
-              className="p-2 hover:bg-dark-800 rounded-lg transition-colors ml-2"
+            <div className="flex items-center">
+              <ClockIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{plan.duration} days</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {plan.dietaryRestrictions.slice(0, 2).map(tag => (
+            <span
+              key={tag}
+              className="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full"
             >
-              {plan.isFavorite ? (
-                <HeartSolidIcon className="h-5 w-5 text-red-500" />
-              ) : (
-                <HeartIcon className="h-5 w-5 text-dark-400 hover:text-red-500" />
-              )}
+              {tag}
+            </span>
+          ))}
+          {plan.dietaryRestrictions.length > 2 && (
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+              +{plan.dietaryRestrictions.length - 2}
+            </span>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex space-x-2">
+            <Link
+              to={`/meal-plans/${plan._id}`}
+              className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+            >
+              <EyeIcon className="h-5 w-5" />
+            </Link>
+            <Link
+              to={`/meal-plans/${plan._id}/edit`}
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </Link>
+            <button
+              onClick={() => handleDelete(plan._id)}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <TrashIcon className="h-5 w-5" />
             </button>
           </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="flex items-center space-x-2 text-sm text-dark-300">
-              <CalendarIcon className="h-4 w-4" />
-              <span>{duration} days</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-dark-300">
-              <UserGroupIcon className="h-4 w-4" />
-              <span>{plan.servings || 1} servings</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-dark-300">
-              <ClockIcon className="h-4 w-4" />
-              <span>{new Date(plan.createdAt).toLocaleDateString()}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`badge ${
-                plan.status === 'active' ? 'badge-success' :
-                plan.status === 'completed' ? 'badge-primary' :
-                'badge-secondary'
-              }`}>
-                {plan.status || 'draft'}
-              </span>
-            </div>
-          </div>
-
-          {/* Meal preview */}
-          {plan.meals && plan.meals.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-dark-200 mb-2">Today's Meals</h4>
-              <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
-                {plan.meals.slice(0, 3).map((meal, index) => (
-                  <div key={index} className="flex-shrink-0 bg-dark-800 rounded-lg p-2 min-w-[120px]">
-                    <div className="text-xs text-dark-400 uppercase tracking-wide">
-                      {meal.type || 'Meal'}
-                    </div>
-                    <div className="text-sm text-white truncate">
-                      {meal.name || 'Recipe'}
-                    </div>
-                  </div>
-                ))}
-                {plan.meals.length > 3 && (
-                  <div className="flex-shrink-0 bg-dark-800 rounded-lg p-2 min-w-[60px] flex items-center justify-center">
-                    <span className="text-xs text-dark-400">+{plan.meals.length - 3}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center">
-            <div className="flex space-x-2">
-              <Link
-                to={`/meal-plans/${plan._id}`}
-                className="btn btn-primary btn-sm"
-              >
-                <EyeIcon className="h-4 w-4 mr-1" />
-                View
-              </Link>
-              <button className="btn btn-secondary btn-sm">
-                <PencilIcon className="h-4 w-4 mr-1" />
-                Edit
-              </button>
-            </div>
-            <div className="flex space-x-2">
-              <button className="p-2 hover:bg-dark-800 rounded-lg transition-colors text-dark-400 hover:text-primary-400">
-                <ShoppingCartIcon className="h-4 w-4" />
-              </button>
-              <button 
-                onClick={() => handleDelete(plan._id)}
-                className="p-2 hover:bg-dark-800 rounded-lg transition-colors text-dark-400 hover:text-red-400"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <Link
+            to={`/meal-plans/${plan._id}/shopping-list`}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors"
+          >
+            <ShoppingCartIcon className="h-4 w-4 mr-1" />
+            Shopping List
+          </Link>
         </div>
-      </motion.div>
-    );
-  };
-
-  const EmptyState = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-center py-16"
-    >
-      <div className="card p-12 max-w-md mx-auto">
-        <div className="w-16 h-16 bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CalendarIcon className="h-8 w-8 text-primary-400" />
-        </div>
-        <h3 className="text-xl font-semibold text-white mb-4">
-          No meal plans yet
-        </h3>
-        <p className="text-dark-300 mb-6">
-          Create your first AI-powered meal plan to get started with organized, healthy eating.
-        </p>
-        <Link
-          to="/meal-plan-generator"
-          className="btn btn-primary"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Create Meal Plan
-        </Link>
       </div>
     </motion.div>
   );
 
-  return (
-    <div className="min-h-screen py-8">
-      <div className="container-custom">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div className="mb-6 lg:mb-0">
-            <h1 className="text-4xl font-bold text-gradient mb-4">Your Meal Plans</h1>
-            <p className="text-dark-300">
-              Manage and organize your AI-generated meal plans
-            </p>
-          </div>
-          <div className="flex space-x-4">
-            <Link
-              to="/meal-plan-generator"
-              className="btn btn-primary"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Create New Plan
+  const MealPlanListItem = ({ plan }) => (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <Link to={`/meal-plans/${plan._id}`}>
+              <h3 className="text-lg font-semibold text-gray-900 hover:text-orange-600 transition-colors">
+                {plan.title}
+              </h3>
             </Link>
+            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(plan.status)}`}>
+              {plan.status}
+            </span>
+          </div>
+          
+          <p className="text-gray-600 text-sm mb-3">
+            {plan.description}
+          </p>
+          
+          <div className="flex items-center space-x-6 text-sm text-gray-500 mb-3">
+            <div className="flex items-center">
+              <CalendarIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}</span>
+            </div>
+            <div className="flex items-center">
+              <ClockIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{plan.duration} days</span>
+            </div>
+            <div className="flex items-center">
+              <UserGroupIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{plan.settings?.mealsPerDay || 3} meals/day</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {plan.dietaryRestrictions.slice(0, 3).map(tag => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
+        
+        <div className="flex items-center space-x-3 ml-6">
+          <Link
+            to={`/meal-plans/${plan._id}`}
+            className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+          >
+            <EyeIcon className="h-5 w-5" />
+          </Link>
+          <Link
+            to={`/meal-plans/${plan._id}/edit`}
+            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </Link>
+          <button
+            onClick={() => handleDelete(plan._id)}
+            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+          <Link
+            to={`/meal-plans/${plan._id}/shopping-list`}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors"
+          >
+            <ShoppingCartIcon className="h-4 w-4 mr-1" />
+            List
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
 
-        {/* Filters and Search */}
-        <div className="card p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-dark-400" />
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading meal plans...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Your Meal Plans</h1>
+            <p className="text-gray-600 mt-2">Manage and organize your meal plans</p>
+          </div>
+          
+          <Link
+            to="/meal-plans/generate"
+            className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Create New Plan
+          </Link>
+        </div>
+
+        {/* Controls */}
+        <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              </div>
               <input
                 type="text"
                 placeholder="Search meal plans..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-10"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
               />
             </div>
-
-            {/* Status Filter */}
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="input"
-            >
-              <option value="all">All Plans</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="favorites">Favorites</option>
-            </select>
-
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="input"
-            >
-              <option value="created_at">Newest First</option>
-              <option value="updated_at">Recently Updated</option>
-              <option value="name">Name</option>
-              <option value="start_date">Start Date</option>
-            </select>
-
-            {/* View Mode */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`btn flex-1 ${
-                  viewMode === 'grid' ? 'btn-primary' : 'btn-secondary'
-                }`}
+            
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
               >
-                Grid
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`btn flex-1 ${
-                  viewMode === 'list' ? 'btn-primary' : 'btn-secondary'
-                }`}
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="draft">Draft</option>
+                <option value="paused">Paused</option>
+                <option value="archived">Archived</option>
+              </select>
+              
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
               >
-                List
-              </button>
+                <option value="created_at">Newest First</option>
+                <option value="updated_at">Recently Updated</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="start_date">Start Date</option>
+              </select>
+              
+              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-3 ${viewMode === 'grid' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-orange-50'}`}
+                >
+                  <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-3 ${viewMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-orange-50'}`}
+                >
+                  <EyeIcon className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Content */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="card p-6">
-                <div className="skeleton h-6 mb-4"></div>
-                <div className="skeleton h-4 mb-2"></div>
-                <div className="skeleton h-4 mb-4 w-3/4"></div>
-                <div className="flex space-x-2 mb-4">
-                  <div className="skeleton h-8 w-20"></div>
-                  <div className="skeleton h-8 w-20"></div>
-                </div>
-                <div className="skeleton h-10"></div>
-              </div>
-            ))}
+        {/* Results */}
+        {filteredMealPlans.length === 0 ? (
+          <div className="text-center py-12">
+            <CalendarIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No meal plans found</h3>
+            <p className="text-gray-600 mb-4">Create your first meal plan to get started</p>
+            <Link
+              to="/meal-plans/generate"
+              className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Create Meal Plan
+            </Link>
           </div>
-        ) : filteredMealPlans.length === 0 ? (
-          <EmptyState />
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`grid gap-6 ${
-              viewMode === 'grid'
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                : 'grid-cols-1'
-            }`}
-          >
-            {filteredMealPlans.map((plan, index) => (
-              <motion.div
-                key={plan._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <MealPlanCard plan={plan} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="mb-8">
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMealPlans.map(plan => (
+                  <MealPlanCard key={plan._id} plan={plan} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredMealPlans.map(plan => (
+                  <MealPlanListItem key={plan._id} plan={plan} />
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Pagination */}
-        {filteredMealPlans.length > 0 && (
-          <div className="flex justify-center mt-12">
-            <div className="flex space-x-2">
-              <button className="btn btn-secondary" disabled>
-                Previous
-              </button>
-              <button className="btn btn-primary">1</button>
-              <button className="btn btn-secondary" disabled>
-                Next
-              </button>
+        {/* Stats */}
+        {mealPlans.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Plans</h3>
+              <p className="text-3xl font-bold text-orange-600">{mealPlans.length}</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Plans</h3>
+              <p className="text-3xl font-bold text-orange-600">{mealPlans.filter(p => p.status === 'active').length}</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Completed Plans</h3>
+              <p className="text-3xl font-bold text-orange-600">{mealPlans.filter(p => p.status === 'completed').length}</p>
             </div>
           </div>
         )}

@@ -53,9 +53,9 @@ const Profile = () => {
   });
 
   // Password form
-  const {
-    register: registerPassword,
-    handleSubmit: handleSubmitPassword,
+  const { 
+    register: registerPassword, 
+    handleSubmit: handleSubmitPassword, 
     formState: { errors: passwordErrors, isSubmitting: isSubmittingPassword },
     reset: resetPassword,
     watch: watchPassword
@@ -64,554 +64,473 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       resetProfile({
-        name: user.name || '',
-        email: user.email || '',
-        bio: user.bio || '',
+        name: user?.name || '',
+        email: user?.email || '',
+        bio: user?.bio || '',
         preferences: {
-          dietaryRestrictions: user.preferences?.dietaryRestrictions || [],
-          allergies: user.preferences?.allergies || [],
-          cuisinePreferences: user.preferences?.cuisinePreferences || [],
-          cookingSkillLevel: user.preferences?.cookingSkillLevel || 'beginner',
-          mealPrepTime: user.preferences?.mealPrepTime || '30'
+          dietaryRestrictions: user?.preferences?.dietaryRestrictions || [],
+          allergies: user?.preferences?.allergies || [],
+          cuisinePreferences: user?.preferences?.cuisinePreferences || [],
+          cookingSkillLevel: user?.preferences?.cookingSkillLevel || 'beginner',
+          mealPrepTime: user?.preferences?.mealPrepTime || '30'
         }
       });
     }
   }, [user, resetProfile]);
 
-  const onSubmitProfile = async (data) => {
+  const handleProfileSubmit = async (data) => {
     try {
-      const updatedUser = await authService.updateProfile(data);
-      updateUser(updatedUser);
+      await updateUser(data);
+      toast.success('Profile updated successfully!');
       setIsEditing(false);
-      toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     }
   };
 
-  const onSubmitPassword = async (data) => {
+  const handlePasswordSubmit = async (data) => {
     if (data.newPassword !== data.confirmPassword) {
       toast.error('New passwords do not match');
       return;
     }
 
     try {
-      await authService.changePassword({
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword
-      });
+      await authService.changePassword(data.currentPassword, data.newPassword);
+      toast.success('Password updated successfully!');
       resetPassword();
-      toast.success('Password changed successfully');
     } catch (error) {
       console.error('Error changing password:', error);
-      toast.error('Failed to change password');
+      toast.error('Failed to update password. Please check your current password.');
     }
   };
-
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      return;
-    }
-    
-    const confirmText = prompt('Type "DELETE" to confirm account deletion:');
-    if (confirmText !== 'DELETE') {
-      toast.error('Account deletion cancelled');
-      return;
-    }
-
-    try {
-      await authService.deleteAccount();
-      toast.success('Account deleted successfully');
-      // Redirect will be handled by auth store
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
-    }
-  };
-
-  const tabs = [
-    { id: 'profile', name: 'Profile', icon: UserIcon },
-    { id: 'preferences', name: 'Preferences', icon: HeartIcon },
-    { id: 'security', name: 'Security', icon: ShieldCheckIcon },
-    { id: 'notifications', name: 'Notifications', icon: BellIcon },
-    { id: 'data', name: 'Data & Privacy', icon: ChartBarIcon }
-  ];
 
   const dietaryOptions = [
-    'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo', 
-    'Low-Carb', 'Low-Fat', 'High-Protein', 'Mediterranean', 'Whole30'
-  ];
-
-  const allergyOptions = [
-    'Nuts', 'Shellfish', 'Eggs', 'Dairy', 'Soy', 'Wheat', 'Fish', 'Sesame'
+    'vegan', 'vegetarian', 'keto', 'paleo', 'gluten-free', 
+    'dairy-free', 'nut-free', 'low-carb', 'low-fat', 'high-protein'
   ];
 
   const cuisineOptions = [
-    'Italian', 'Mexican', 'Chinese', 'Indian', 'Japanese', 'Mediterranean',
-    'Thai', 'French', 'Korean', 'Greek', 'American', 'Middle Eastern'
+    'american', 'italian', 'mexican', 'chinese', 'indian', 
+    'mediterranean', 'french', 'japanese', 'thai', 'greek'
   ];
 
-  const ProfileTab = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-white">Profile Information</h2>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="btn btn-secondary"
-        >
-          {isEditing ? (
-            <>
-              <XMarkIcon className="h-4 w-4 mr-2" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Edit
-            </>
-          )}
-        </button>
-      </div>
+  const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
+    <button
+      onClick={onClick}
+      className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+        isActive
+          ? 'bg-orange-500 text-white'
+          : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
+      }`}
+    >
+      <Icon className="h-5 w-5 mr-2" />
+      {label}
+    </button>
+  );
 
-      <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-6">
-        {/* Avatar */}
-        <div className="flex items-center space-x-6">
-          <div className="relative">
-            <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-              <UserIcon className="h-12 w-12 text-white" />
-            </div>
-            {isEditing && (
-              <button
-                type="button"
-                className="absolute -bottom-2 -right-2 p-2 bg-primary-600 rounded-full hover:bg-primary-700 transition-colors"
-              >
-                <CameraIcon className="h-4 w-4 text-white" />
-              </button>
-            )}
-          </div>
-          <div>
-            <h3 className="text-lg font-medium text-white">{user?.name}</h3>
-            <p className="text-dark-300">{user?.email}</p>
-            <p className="text-sm text-dark-400">Member since {new Date(user?.createdAt).toLocaleDateString()}</p>
-          </div>
-        </div>
-
-        {/* Basic Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input
-              type="text"
-              {...registerProfile('name', { required: 'Name is required' })}
-              disabled={!isEditing}
-              className={`input ${profileErrors.name ? 'input-error' : ''}`}
-            />
-            {profileErrors.name && (
-              <p className="form-error">{profileErrors.name.message}</p>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input
-              type="email"
-              {...registerProfile('email', { required: 'Email is required' })}
-              disabled={!isEditing}
-              className={`input ${profileErrors.email ? 'input-error' : ''}`}
-            />
-            {profileErrors.email && (
-              <p className="form-error">{profileErrors.email.message}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Bio</label>
-          <textarea
-            {...registerProfile('bio')}
-            disabled={!isEditing}
-            rows={3}
-            placeholder="Tell us about yourself..."
-            className="input resize-none"
-          />
-        </div>
-
-        {isEditing && (
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false);
-                resetProfile();
-              }}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmittingProfile}
-              className="btn btn-primary"
-            >
-              {isSubmittingProfile ? 'Saving...' : (
-                <>
-                  <CheckIcon className="h-4 w-4 mr-2" />
-                  Save Changes
-                </>
-              )}
-            </button>
-          </div>
-        )}
-      </form>
+  const ToggleSwitch = ({ checked, onChange, label }) => (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-gray-700">{label}</span>
+      <button
+        type="button"
+        onClick={onChange}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          checked ? 'bg-orange-500' : 'bg-gray-200'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            checked ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
     </div>
   );
 
-  const PreferencesTab = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Food Preferences</h2>
-      
-      <form className="space-y-6">
-        {/* Dietary Restrictions */}
-        <div className="form-group">
-          <label className="form-label">Dietary Restrictions</label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {dietaryOptions.map(option => (
-              <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value={option}
-                  {...registerProfile('preferences.dietaryRestrictions')}
-                  className="rounded border-dark-600 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-dark-200">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Allergies */}
-        <div className="form-group">
-          <label className="form-label">Allergies</label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {allergyOptions.map(option => (
-              <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value={option}
-                  {...registerProfile('preferences.allergies')}
-                  className="rounded border-dark-600 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-dark-200">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Cuisine Preferences */}
-        <div className="form-group">
-          <label className="form-label">Favorite Cuisines</label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {cuisineOptions.map(option => (
-              <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value={option}
-                  {...registerProfile('preferences.cuisinePreferences')}
-                  className="rounded border-dark-600 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-dark-200">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Cooking Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="form-group">
-            <label className="form-label">Cooking Skill Level</label>
-            <select
-              {...registerProfile('preferences.cookingSkillLevel')}
-              className="input"
-            >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-              <option value="expert">Expert</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Preferred Meal Prep Time (minutes)</label>
-            <select
-              {...registerProfile('preferences.mealPrepTime')}
-              className="input"
-            >
-              <option value="15">15 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="45">45 minutes</option>
-              <option value="60">1 hour</option>
-              <option value="90">1.5 hours</option>
-              <option value="120">2+ hours</option>
-            </select>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-
-  const SecurityTab = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Security Settings</h2>
-      
-      {/* Change Password */}
-      <div className="card p-6">
-        <h3 className="text-lg font-medium text-white mb-4">Change Password</h3>
-        <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
-          <div className="form-group">
-            <label className="form-label">Current Password</label>
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? 'text' : 'password'}
-                {...registerPassword('currentPassword', { required: 'Current password is required' })}
-                className={`input pr-10 ${passwordErrors.currentPassword ? 'input-error' : ''}`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                {showCurrentPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-dark-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-dark-400" />
-                )}
-              </button>
-            </div>
-            {passwordErrors.currentPassword && (
-              <p className="form-error">{passwordErrors.currentPassword.message}</p>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">New Password</label>
-            <div className="relative">
-              <input
-                type={showNewPassword ? 'text' : 'password'}
-                {...registerPassword('newPassword', { 
-                  required: 'New password is required',
-                  minLength: { value: 6, message: 'Password must be at least 6 characters' }
-                })}
-                className={`input pr-10 ${passwordErrors.newPassword ? 'input-error' : ''}`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                {showNewPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-dark-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-dark-400" />
-                )}
-              </button>
-            </div>
-            {passwordErrors.newPassword && (
-              <p className="form-error">{passwordErrors.newPassword.message}</p>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Confirm New Password</label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                {...registerPassword('confirmPassword', {
-                  required: 'Please confirm your password',
-                  validate: value => value === watchPassword('newPassword') || 'Passwords do not match'
-                })}
-                className={`input pr-10 ${passwordErrors.confirmPassword ? 'input-error' : ''}`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                {showConfirmPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-dark-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-dark-400" />
-                )}
-              </button>
-            </div>
-            {passwordErrors.confirmPassword && (
-              <p className="form-error">{passwordErrors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmittingPassword}
-            className="btn btn-primary"
-          >
-            {isSubmittingPassword ? 'Changing...' : 'Change Password'}
-          </button>
-        </form>
-      </div>
-
-      {/* Delete Account */}
-      <div className="card p-6 border-red-900">
-        <h3 className="text-lg font-medium text-red-400 mb-4">Danger Zone</h3>
-        <p className="text-dark-300 mb-4">
-          Once you delete your account, there is no going back. Please be certain.
-        </p>
-        <button
-          onClick={handleDeleteAccount}
-          className="btn btn-danger"
-        >
-          <TrashIcon className="h-4 w-4 mr-2" />
-          Delete Account
-        </button>
-      </div>
-    </div>
-  );
-
-  const NotificationsTab = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Notification Preferences</h2>
-      
-      <div className="space-y-4">
-        {[
-          { id: 'email_recipes', label: 'New Recipe Recommendations', description: 'Get notified about new recipes that match your preferences' },
-          { id: 'email_meal_plans', label: 'Meal Plan Updates', description: 'Receive updates about your meal plans and schedules' },
-          { id: 'email_tips', label: 'Cooking Tips & News', description: 'Weekly cooking tips and food-related news' },
-          { id: 'push_reminders', label: 'Meal Prep Reminders', description: 'Push notifications for meal preparation reminders' },
-          { id: 'push_shopping', label: 'Shopping List Updates', description: 'Notifications when your shopping list is updated' }
-        ].map(notification => (
-          <div key={notification.id} className="card p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium">{notification.label}</h4>
-                <p className="text-dark-300 text-sm">{notification.description}</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-dark-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-              </label>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const DataTab = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Data & Privacy</h2>
-      
-      <div className="space-y-6">
-        {/* Data Export */}
-        <div className="card p-6">
-          <h3 className="text-lg font-medium text-white mb-4">Export Your Data</h3>
-          <p className="text-dark-300 mb-4">
-            Download a copy of your data including recipes, meal plans, and preferences.
-          </p>
-          <button className="btn btn-secondary">
-            <ChartBarIcon className="h-4 w-4 mr-2" />
-            Download Data
-          </button>
-        </div>
-
-        {/* Privacy Settings */}
-        <div className="card p-6">
-          <h3 className="text-lg font-medium text-white mb-4">Privacy Settings</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium">Make Profile Public</h4>
-                <p className="text-dark-300 text-sm">Allow others to see your favorite recipes and meal plans</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-dark-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-              </label>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium">Analytics & Insights</h4>
-                <p className="text-dark-300 text-sm">Help us improve by sharing anonymous usage data</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-dark-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-              </label>
-            </div>
-          </div>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <UserIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Please sign in</h3>
+          <p className="text-gray-600">You need to be signed in to view your profile.</p>
         </div>
       </div>
-    </div>
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'profile': return <ProfileTab />;
-      case 'preferences': return <PreferencesTab />;
-      case 'security': return <SecurityTab />;
-      case 'notifications': return <NotificationsTab />;
-      case 'data': return <DataTab />;
-      default: return <ProfileTab />;
-    }
-  };
+    );
+  }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container-custom">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gradient mb-4">Profile Settings</h1>
-          <p className="text-dark-300">
-            Manage your account, preferences, and privacy settings
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="card p-4 sticky top-8">
-              <nav className="space-y-2">
-                {tabs.map(tab => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-primary-900 text-primary-400'
-                          : 'text-dark-300 hover:text-white hover:bg-dark-800'
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="font-medium">{tab.name}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserIcon className="h-12 w-12 text-orange-600" />
             </div>
+            <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
+            <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-2 mb-8 bg-white rounded-xl p-2 shadow-lg border border-gray-100">
+            <TabButton
+              id="profile"
+              label="Profile"
+              icon={UserIcon}
+              isActive={activeTab === 'profile'}
+              onClick={() => setActiveTab('profile')}
+            />
+            <TabButton
+              id="preferences"
+              label="Preferences"
+              icon={CogIcon}
+              isActive={activeTab === 'preferences'}
+              onClick={() => setActiveTab('preferences')}
+            />
+            <TabButton
+              id="security"
+              label="Security"
+              icon={ShieldCheckIcon}
+              isActive={activeTab === 'security'}
+              onClick={() => setActiveTab('security')}
+            />
+            <TabButton
+              id="notifications"
+              label="Notifications"
+              icon={BellIcon}
+              isActive={activeTab === 'notifications'}
+              onClick={() => setActiveTab('notifications')}
+            />
           </div>
 
           {/* Content */}
-          <div className="lg:col-span-3">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="card p-8"
-            >
-              {renderTabContent()}
-            </motion.div>
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+            {activeTab === 'profile' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  >
+                    {isEditing ? (
+                      <>
+                        <XMarkIcon className="h-4 w-4 mr-2" />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <PencilIcon className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {isEditing ? (
+                  <form onSubmit={handleSubmitProfile(handleProfileSubmit)}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          {...registerProfile('name', { required: 'Name is required' })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          placeholder="Enter your full name"
+                        />
+                        {profileErrors.name && (
+                          <p className="text-red-500 text-sm mt-1">{profileErrors.name.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email
+                        </label>
+                        <input
+                          {...registerProfile('email', { 
+                            required: 'Email is required',
+                            pattern: {
+                              value: /^\S+@\S+$/i,
+                              message: 'Invalid email address'
+                            }
+                          })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          placeholder="Enter your email"
+                        />
+                        {profileErrors.email && (
+                          <p className="text-red-500 text-sm mt-1">{profileErrors.email.message}</p>
+                        )}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Bio
+                        </label>
+                        <textarea
+                          {...registerProfile('bio')}
+                          rows="4"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          placeholder="Tell us about yourself..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end mt-6">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingProfile}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                      >
+                        {isSubmittingProfile ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                      </label>
+                      <p className="text-gray-900">{user.name || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <p className="text-gray-900">{user.email}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Bio
+                      </label>
+                      <p className="text-gray-900">{user.bio || 'No bio provided'}</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'preferences' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900">Preferences</h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Dietary Restrictions
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {dietaryOptions.map(option => (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`p-3 rounded-lg border text-left transition-colors ${
+                            user.preferences?.dietaryRestrictions?.includes(option)
+                              ? 'bg-orange-500 text-white border-orange-500'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Cuisine Preferences
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {cuisineOptions.map(option => (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`p-3 rounded-lg border text-left transition-colors ${
+                            user.preferences?.cuisinePreferences?.includes(option)
+                              ? 'bg-blue-500 text-white border-blue-500'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Cooking Skill Level
+                      </label>
+                      <p className="text-gray-900 capitalize">{user.preferences?.cookingSkillLevel || 'Beginner'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Max Prep Time (minutes)
+                      </label>
+                      <p className="text-gray-900">{user.preferences?.mealPrepTime || '30'} minutes</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'security' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900">Security</h2>
+                
+                <form onSubmit={handleSubmitPassword(handlePasswordSubmit)} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...registerPassword('currentPassword', { required: 'Current password is required' })}
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors pr-10"
+                        placeholder="Enter current password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showCurrentPassword ? (
+                          <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordErrors.currentPassword && (
+                      <p className="text-red-500 text-sm mt-1">{passwordErrors.currentPassword.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...registerPassword('newPassword', { 
+                          required: 'New password is required',
+                          minLength: {
+                            value: 6,
+                            message: 'Password must be at least 6 characters'
+                          }
+                        })}
+                        type={showNewPassword ? 'text' : 'password'}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors pr-10"
+                        placeholder="Enter new password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showNewPassword ? (
+                          <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordErrors.newPassword && (
+                      <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...registerPassword('confirmPassword', { required: 'Please confirm your new password' })}
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors pr-10"
+                        placeholder="Confirm new password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordErrors.confirmPassword && (
+                      <p className="text-red-500 text-sm mt-1">{passwordErrors.confirmPassword.message}</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingPassword}
+                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                    >
+                      {isSubmittingPassword ? 'Updating...' : 'Change Password'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900">Notification Settings</h2>
+                
+                <div className="space-y-4">
+                  <ToggleSwitch
+                    checked={user.preferences?.notifications?.email || false}
+                    onChange={() => {}}
+                    label="Email Notifications"
+                  />
+                  <ToggleSwitch
+                    checked={user.preferences?.notifications?.push || false}
+                    onChange={() => {}}
+                    label="Push Notifications"
+                  />
+                  <ToggleSwitch
+                    checked={user.preferences?.notifications?.mealReminders || false}
+                    onChange={() => {}}
+                    label="Meal Reminders"
+                  />
+                  <ToggleSwitch
+                    checked={user.preferences?.notifications?.planUpdates || false}
+                    onChange={() => {}}
+                    label="Plan Updates"
+                  />
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

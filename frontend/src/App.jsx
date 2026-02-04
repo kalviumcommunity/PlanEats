@@ -22,12 +22,12 @@ function App() {
 
   useEffect(() => {
     initializeAuth();
-    // Ensure dark theme is always applied
-    document.documentElement.classList.remove('dark'); // Remove dark class since we're using light colors on black background
+    // Ensure proper theme is applied
+    document.documentElement.classList.remove('dark');
   }, [initializeAuth]);
 
   return (
-    <div className="min-h-screen bg-black text-yellow-100">
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
       <Navigation />
       
       <Routes>

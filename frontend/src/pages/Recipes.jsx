@@ -55,13 +55,17 @@ const Recipes = () => {
       if (filters.cuisine.length > 0) {
         params.cuisine = filters.cuisine.join(',');
       }
-      
-      const data = await recipeService.getRecipes(params);
-      setRecipes(data.recipes);
-      setPagination(data.pagination);
+
+      const response = await recipeService.getRecipes(params);
+      setRecipes(response.recipes);
+      setPagination({
+        currentPage: response.currentPage,
+        totalPages: response.totalPages,
+        total: response.total
+      });
     } catch (error) {
       console.error('Error fetching recipes:', error);
-      toast.error('Failed to fetch recipes');
+      toast.error('Failed to load recipes');
     } finally {
       setLoading(false);
     }
@@ -69,310 +73,304 @@ const Recipes = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await recipeService.getCategories();
-      setCategories(data);
+      const response = await recipeService.getCategories();
+      setCategories(response);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   };
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => {
-      if (Array.isArray(prev[filterType])) {
-        const newArray = prev[filterType].includes(value)
-          ? prev[filterType].filter(item => item !== value)
-          : [...prev[filterType], value];
-        return { ...prev, [filterType]: newArray };
-      }
-      return { ...prev, [filterType]: value };
-    });
+  const toggleFilter = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType]?.includes(value)
+        ? prev[filterType].filter(v => v !== value)
+        : [...(prev[filterType] || []), value]
+    }));
   };
 
-  const handleToggleFavorite = async (recipeId) => {
+  const toggleFavorite = async (recipeId) => {
     if (!isAuthenticated()) {
-      toast.error('Please log in to favorite recipes');
+      toast.error('Please sign in to save recipes');
       return;
     }
 
     try {
       await recipeService.toggleFavorite(recipeId);
-      toast.success('Recipe favorite status updated');
-      // Optionally refresh recipes to update favorite status
+      setRecipes(prev => prev.map(recipe => 
+        recipe._id === recipeId 
+          ? { ...recipe, isFavorite: !recipe.isFavorite }
+          : recipe
+      ));
+      toast.success('Recipe saved to favorites!');
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error('Failed to update favorite status');
+      toast.error('Failed to save recipe');
     }
   };
 
-  const RecipeCard = ({ recipe }) => {
-    const [isFavorited, setIsFavorited] = useState(false);
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="card hover-lift overflow-hidden"
-      >
-        {/* Recipe Image */}
-        <div className="relative h-48 bg-dark-800">
-          {recipe.images && recipe.images.length > 0 ? (
-            <img
-              src={recipe.images.find(img => img.isPrimary)?.url || recipe.images[0]?.url}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <SparklesIcon className="w-16 h-16 text-dark-600" />
-            </div>
-          )}
-          
-          {/* Favorite Button */}
-          {isAuthenticated() && (
-            <button
-              onClick={() => {
-                setIsFavorited(!isFavorited);
-                handleToggleFavorite(recipe._id);
-              }}
-              className="absolute top-3 right-3 p-2 bg-dark-900/80 rounded-full hover:bg-dark-900 transition-colors"
-            >
-              {isFavorited ? (
-                <HeartIconSolid className="w-5 h-5 text-red-500" />
-              ) : (
-                <HeartIcon className="w-5 h-5 text-white" />
-              )}
-            </button>
-          )}
-          
-          {/* Difficulty Badge */}
-          <div className="absolute top-3 left-3">
-            <span className={`badge ${
-              recipe.difficulty === 'easy' ? 'badge-success' :
-              recipe.difficulty === 'medium' ? 'badge-warning' :
-              'badge-danger'
-            }`}>
-              {recipe.difficulty}
-            </span>
+  const RecipeCard = ({ recipe }) => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group"
+    >
+      <div className="relative">
+        <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+          <div className="text-center text-orange-600">
+            <SparklesIcon className="h-12 w-12 mx-auto" />
+            <p className="text-sm font-medium mt-2">{recipe.title}</p>
           </div>
         </div>
-
-        {/* Recipe Content */}
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-xl font-semibold text-white line-clamp-2">
-              {recipe.title}
-            </h3>
-          </div>
-          
-          <p className="text-dark-300 text-sm mb-4 line-clamp-2">
-            {recipe.description}
-          </p>
-
-          {/* Recipe Meta */}
-          <div className="flex items-center space-x-4 mb-4 text-sm text-dark-400">
-            <div className="flex items-center space-x-1">
-              <ClockIcon className="w-4 h-4" />
-              <span>{recipe.prepTime + recipe.cookTime} min</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <StarIcon className="w-4 h-4" />
-              <span>{recipe.rating?.average?.toFixed(1) || 'N/A'}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span>{recipe.servings} servings</span>
-            </div>
-          </div>
-
-          {/* Dietary Tags */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {recipe.dietaryTags?.slice(0, 3).map(tag => (
-              <span key={tag} className="badge badge-primary text-xs">
-                {tag}
-              </span>
-            ))}
-            {recipe.dietaryTags?.length > 3 && (
-              <span className="badge badge-secondary text-xs">
-                +{recipe.dietaryTags.length - 3} more
-              </span>
-            )}
-          </div>
-
-          {/* Action Button */}
-          <Link
-            to={`/recipes/${recipe._id}`}
-            className="btn-primary w-full text-center"
+        {isAuthenticated() && (
+          <button
+            onClick={() => toggleFavorite(recipe._id)}
+            className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
           >
-            View Recipe
-          </Link>
+            {recipe.isFavorite ? (
+              <HeartIconSolid className="h-5 w-5 text-red-500" />
+            ) : (
+              <HeartIcon className="h-5 w-5 text-gray-600 hover:text-red-500" />
+            )}
+          </button>
+        )}
+      </div>
+      
+      <div className="p-6">
+        <Link to={`/recipes/${recipe._id}`}>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
+            {recipe.title}
+          </h3>
+        </Link>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {recipe.description}
+        </p>
+        
+        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <ClockIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{recipe.prepTime + recipe.cookTime}m</span>
+            </div>
+            <div className="flex items-center">
+              <StarIcon className="h-4 w-4 mr-1 text-orange-500" />
+              <span>{recipe.rating?.average?.toFixed(1) || 'New'}</span>
+            </div>
+          </div>
         </div>
-      </motion.div>
+        
+        <div className="flex flex-wrap gap-2">
+          {recipe.dietaryTags.slice(0, 3).map(tag => (
+            <span
+              key={tag}
+              className="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+          {recipe.dietaryTags.length > 3 && (
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+              +{recipe.dietaryTags.length - 3}
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const FilterSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-8"
+    >
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Find Your Perfect Recipe</h2>
+        
+        <div className="relative flex-1 max-w-md">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+          />
+        </div>
+        
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 border border-orange-200 transition-colors"
+        >
+          <FunnelIcon className="h-4 w-4 mr-2" />
+          Filters
+        </button>
+      </div>
+
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="border-t border-gray-200 pt-6 space-y-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Dietary Tags */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Tags</label>
+              <div className="space-y-2">
+                {categories.dietaryTags?.map(tag => (
+                  <label key={tag} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.dietaryTags.includes(tag)}
+                      onChange={() => toggleFilter('dietaryTags', tag)}
+                      className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 capitalize">{tag}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Meal Types */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Meal Type</label>
+              <div className="space-y-2">
+                {categories.mealTypes?.map(type => (
+                  <label key={type} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.mealType.includes(type)}
+                      onChange={() => toggleFilter('mealType', type)}
+                      className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 capitalize">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Cuisines */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Cuisine</label>
+              <div className="space-y-2">
+                {categories.cuisines?.map(cuisine => (
+                  <label key={cuisine} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.cuisine.includes(cuisine)}
+                      onChange={() => toggleFilter('cuisine', cuisine)}
+                      className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 capitalize">{cuisine}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Difficulty & Sort */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                <select
+                  value={filters.difficulty}
+                  onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="">Any Difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="prepTime">Shortest Prep Time</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+
+  if (loading && recipes.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading recipes...</p>
+        </div>
+      </div>
     );
-  };
+  }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container-custom">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gradient mb-4">Discover Recipes</h1>
-          <p className="text-dark-300 max-w-2xl mx-auto">
-            Browse our collection of delicious recipes, search by ingredients, and find your next favorite meal
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        <FilterSection />
 
-        {/* Search and Filters */}
-        <div className="card p-6 mb-8">
-          {/* Search Bar */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            <div className="flex-1 relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
-              <input
-                type="text"
-                placeholder="Search recipes or ingredients..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-10 w-full"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="btn-secondary flex items-center space-x-2"
-            >
-              <FunnelIcon className="w-5 h-5" />
-              <span>Filters</span>
-            </button>
+        {!loading && recipes.length === 0 && (
+          <div className="text-center py-12">
+            <SparklesIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
+            <p className="text-gray-600">Try adjusting your search or filters</p>
           </div>
+        )}
 
-          {/* Filters */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t border-dark-700 pt-6 space-y-4"
-            >
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Dietary Tags */}
-                <div>
-                  <label className="form-label mb-2">Dietary Preferences</label>
-                  <div className="space-y-2">
-                    {categories.dietaryTags?.map(tag => (
-                      <label key={tag} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={filters.dietaryTags.includes(tag)}
-                          onChange={() => handleFilterChange('dietaryTags', tag)}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-dark-300">{tag}</span>
-                      </label>
-                    ))}
-                  </div>
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-lg animate-pulse">
+                <div className="h-48 bg-gray-200 rounded-t-xl"></div>
+                <div className="p-6 space-y-4">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                 </div>
-
-                {/* Meal Type */}
-                <div>
-                  <label className="form-label mb-2">Meal Type</label>
-                  <div className="space-y-2">
-                    {categories.mealTypes?.map(type => (
-                      <label key={type} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={filters.mealType.includes(type)}
-                          onChange={() => handleFilterChange('mealType', type)}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-dark-300">{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Difficulty */}
-                <div>
-                  <label className="form-label mb-2">Difficulty</label>
-                  <select
-                    value={filters.difficulty}
-                    onChange={(e) => handleFilterChange('difficulty', e.target.value)}
-                    className="input w-full"
-                  >
-                    <option value="">Any</option>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
-
-                {/* Sort By */}
-                <div>
-                  <label className="form-label mb-2">Sort By</label>
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                    className="input w-full"
-                  >
-                    <option value="newest">Newest</option>
-                    <option value="oldest">Oldest</option>
-                    <option value="rating">Rating</option>
-                    <option value="prepTime">Prep Time</option>
-                    <option value="totalTime">Total Time</option>
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Results */}
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="card p-6 animate-pulse">
-                <div className="h-48 bg-dark-800 rounded mb-4"></div>
-                <div className="h-4 bg-dark-800 rounded mb-2"></div>
-                <div className="h-4 bg-dark-800 rounded w-3/4 mb-4"></div>
-                <div className="h-8 bg-dark-800 rounded"></div>
               </div>
             ))}
           </div>
-        ) : recipes.length > 0 ? (
+        )}
+
+        {!loading && recipes.length > 0 && (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {recipes.map(recipe => (
                 <RecipeCard key={recipe._id} recipe={recipe} />
               ))}
             </div>
 
-            {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-4">
-                <button
-                  onClick={() => fetchRecipes(pagination.currentPage - 1)}
-                  disabled={!pagination.hasPrev}
-                  className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <span className="text-dark-300">
-                  Page {pagination.currentPage} of {pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => fetchRecipes(pagination.currentPage + 1)}
-                  disabled={!pagination.hasNext}
-                  className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
+              <div className="flex justify-center items-center space-x-2">
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => fetchRecipes(page)}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                      pagination.currentPage === page
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-white text-gray-700 hover:bg-orange-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
             )}
           </>
-        ) : (
-          <div className="text-center py-12">
-            <SparklesIcon className="w-16 h-16 text-dark-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-dark-300 mb-2">No recipes found</h3>
-            <p className="text-dark-400">Try adjusting your search criteria or filters</p>
-          </div>
         )}
       </div>
     </div>

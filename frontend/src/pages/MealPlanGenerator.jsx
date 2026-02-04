@@ -51,195 +51,189 @@ const MealPlanGenerator = () => {
     name: 'ingredients'
   });
 
-  const { fields: excludeFields, append: appendExclude, remove: removeExclude } = useFieldArray({
-    control,
-    name: 'excludeIngredients'
-  });
-
   const dietaryOptions = [
-    { value: 'vegan', label: 'Vegan', icon: '🌱' },
-    { value: 'vegetarian', label: 'Vegetarian', icon: '🥬' },
-    { value: 'keto', label: 'Keto', icon: '🥑' },
-    { value: 'paleo', label: 'Paleo', icon: '🥩' },
-    { value: 'gluten-free', label: 'Gluten-Free', icon: '🌾' },
-    { value: 'dairy-free', label: 'Dairy-Free', icon: '🥛' },
-    { value: 'nut-free', label: 'Nut-Free', icon: '🥜' },
-    { value: 'low-carb', label: 'Low-Carb', icon: '🥒' },
-    { value: 'low-fat', label: 'Low-Fat', icon: '🍃' },
-    { value: 'high-protein', label: 'High-Protein', icon: '💪' }
+    { value: 'vegan', label: 'Vegan' },
+    { value: 'vegetarian', label: 'Vegetarian' },
+    { value: 'keto', label: 'Keto' },
+    { value: 'paleo', label: 'Paleo' },
+    { value: 'gluten-free', label: 'Gluten-Free' },
+    { value: 'dairy-free', label: 'Dairy-Free' },
+    { value: 'nut-free', label: 'Nut-Free' },
+    { value: 'low-carb', label: 'Low Carb' },
+    { value: 'low-fat', label: 'Low Fat' },
+    { value: 'high-protein', label: 'High Protein' }
+  ];
+
+  const allergyOptions = [
+    { value: 'dairy', label: 'Dairy' },
+    { value: 'eggs', label: 'Eggs' },
+    { value: 'fish', label: 'Fish' },
+    { value: 'shellfish', label: 'Shellfish' },
+    { value: 'tree-nuts', label: 'Tree Nuts' },
+    { value: 'peanuts', label: 'Peanuts' },
+    { value: 'wheat', label: 'Wheat' },
+    { value: 'soy', label: 'Soy' },
+    { value: 'sesame', label: 'Sesame' }
   ];
 
   const goalOptions = [
-    { value: 'weight-loss', label: 'Weight Loss', icon: '📉' },
-    { value: 'weight-gain', label: 'Weight Gain', icon: '📈' },
-    { value: 'muscle-building', label: 'Muscle Building', icon: '💪' },
-    { value: 'maintenance', label: 'Maintenance', icon: '⚖️' },
-    { value: 'health-improvement', label: 'Health Improvement', icon: '❤️' }
+    { value: 'weight-loss', label: 'Weight Loss' },
+    { value: 'weight-gain', label: 'Weight Gain' },
+    { value: 'muscle-building', label: 'Muscle Building' },
+    { value: 'maintenance', label: 'Maintenance' },
+    { value: 'health-improvement', label: 'Health Improvement' },
+    { value: 'meal-prep', label: 'Meal Prep' }
   ];
 
   const cuisineOptions = [
-    { value: 'american', label: 'American', icon: '🇺🇸' },
-    { value: 'italian', label: 'Italian', icon: '🇮🇹' },
-    { value: 'mexican', label: 'Mexican', icon: '🇲🇽' },
-    { value: 'chinese', label: 'Chinese', icon: '🇨🇳' },
-    { value: 'indian', label: 'Indian', icon: '🇮🇳' },
-    { value: 'mediterranean', label: 'Mediterranean', icon: '🫒' },
-    { value: 'japanese', label: 'Japanese', icon: '🇯🇵' },
-    { value: 'thai', label: 'Thai', icon: '🇹🇭' },
-    { value: 'korean', label: 'Korean', icon: '🇰🇷' },
-    { value: 'middle-eastern', label: 'Middle Eastern', icon: '🧿' }
+    { value: 'american', label: 'American' },
+    { value: 'italian', label: 'Italian' },
+    { value: 'mexican', label: 'Mexican' },
+    { value: 'chinese', label: 'Chinese' },
+    { value: 'indian', label: 'Indian' },
+    { value: 'mediterranean', label: 'Mediterranean' },
+    { value: 'french', label: 'French' },
+    { value: 'japanese', label: 'Japanese' },
+    { value: 'thai', label: 'Thai' },
+    { value: 'greek', label: 'Greek' }
   ];
 
   const mealTypeOptions = [
-    { value: 'breakfast', label: 'Breakfast', icon: '🌅' },
-    { value: 'lunch', label: 'Lunch', icon: '☀️' },
-    { value: 'dinner', label: 'Dinner', icon: '🌙' },
-    { value: 'snack', label: 'Snacks', icon: '🍎' }
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'dinner', label: 'Dinner' },
+    { value: 'snack', label: 'Snack' },
+    { value: 'dessert', label: 'Dessert' },
+    { value: 'appetizer', label: 'Appetizer' },
+    { value: 'side-dish', label: 'Side Dish' }
   ];
+
+  const toggleOption = (field, value) => {
+    const currentValues = getValues(field) || [];
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter(v => v !== value)
+      : [...currentValues, value];
+    setValue(field, newValues);
+  };
 
   const onSubmit = async (data) => {
     try {
       setGenerating(true);
-      
       // Filter out empty ingredients
-      const filteredIngredients = data.ingredients.filter(ingredient => ingredient.trim() !== '');
+      const filteredIngredients = data.ingredients.filter(ing => ing.trim() !== '');
       
-      if (filteredIngredients.length === 0) {
-        toast.error('Please add at least one ingredient');
-        return;
-      }
-
-      const mealPlanData = {
+      const planData = {
         ...data,
         ingredients: filteredIngredients,
-        excludeIngredients: data.excludeIngredients.filter(item => item.trim() !== '')
+        aiGenerated: true,
+        aiModel: 'gemini',
+        title: `AI Meal Plan - ${new Date().toLocaleDateString()}`,
+        description: 'AI-generated meal plan based on your preferences and ingredients'
       };
 
-      const response = await mealPlanService.generateMealPlan(mealPlanData);
-      
+      const response = await mealPlanService.createMealPlan(planData);
       toast.success('Meal plan generated successfully!');
       navigate(`/meal-plans/${response.mealPlan._id}`);
     } catch (error) {
       console.error('Error generating meal plan:', error);
-      toast.error(error.response?.data?.message || 'Failed to generate meal plan');
+      toast.error('Failed to generate meal plan. Please try again.');
     } finally {
       setGenerating(false);
     }
   };
 
-  const nextStep = () => {
-    if (step < totalSteps) {
-      setStep(step + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
-
-  const handleMultiSelect = (fieldName, value) => {
-    const currentValues = getValues(fieldName) || [];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(item => item !== value)
-      : [...currentValues, value];
-    setValue(fieldName, newValues);
-  };
-
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      {[...Array(totalSteps)].map((_, index) => (
-        <div key={index} className="flex items-center">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-            index + 1 <= step
-              ? 'bg-primary-600 text-white'
-              : 'bg-dark-700 text-dark-400'
-          }`}>
-            {index + 1}
-          </div>
-          {index < totalSteps - 1 && (
-            <div className={`w-12 h-1 mx-2 ${
-              index + 1 < step ? 'bg-primary-600' : 'bg-dark-700'
-            }`} />
-          )}
-        </div>
-      ))}
+  const ProgressBar = () => (
+    <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">Create Your Meal Plan</h2>
+        <span className="text-sm text-gray-600">Step {step} of {totalSteps}</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+          style={{ width: `${(step / totalSteps) * 100}%` }}
+        ></div>
+      </div>
     </div>
   );
 
-  const StepContent = () => {
+  const StepIndicator = ({ stepNum, title, icon: Icon }) => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, delay: (stepNum - 1) * 0.1 }}
+      className={`flex items-center p-4 rounded-xl cursor-pointer transition-all duration-300 ${
+        step === stepNum 
+          ? 'bg-orange-50 border-2 border-orange-500' 
+          : 'bg-white border border-gray-200 hover:border-orange-300'
+      }`}
+      onClick={() => setStep(stepNum)}
+    >
+      <div className={`p-3 rounded-lg ${
+        step === stepNum ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'
+      }`}>
+        <Icon className="h-6 w-6" />
+      </div>
+      <div className="ml-4">
+        <h3 className={`font-semibold ${
+          step === stepNum ? 'text-orange-600' : 'text-gray-900'
+        }`}>{title}</h3>
+        <p className="text-sm text-gray-600">Step {stepNum}</p>
+      </div>
+    </motion.div>
+  );
+
+  const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">What ingredients do you have?</h2>
-              <p className="text-dark-300">Add the ingredients you want to use in your meal plan</p>
-            </div>
-
-            <div className="space-y-4">
-              {ingredientFields.map((field, index) => (
-                <div key={field.id} className="flex items-center space-x-3">
-                  <input
-                    {...register(`ingredients.${index}`, {
-                      required: index === 0 ? 'At least one ingredient is required' : false
-                    })}
-                    className="input flex-1"
-                    placeholder="e.g., chicken breast, broccoli, rice"
-                  />
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => removeIngredient(index)}
-                      className="p-2 text-red-400 hover:text-red-300"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {errors.ingredients?.[0] && (
-                <p className="form-error">{errors.ingredients[0].message}</p>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => appendIngredient('')}
-              className="btn-secondary w-full flex items-center justify-center space-x-2"
-            >
-              <PlusIcon className="w-5 h-5" />
-              <span>Add Another Ingredient</span>
-            </button>
-
-            <div className="grid md:grid-cols-2 gap-6 mt-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h3>
+            
+            <div className="space-y-6">
               <div>
-                <label className="form-label">Meal Plan Duration</label>
-                <select {...register('duration')} className="input w-full">
-                  <option value={3}>3 days</option>
-                  <option value={5}>5 days</option>
-                  <option value={7}>1 week</option>
-                  <option value={14}>2 weeks</option>
-                  <option value={21}>3 weeks</option>
-                  <option value={30}>1 month</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Duration (days)
+                </label>
+                <select
+                  {...register('duration', { required: true })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                >
+                  {[3, 5, 7, 14, 21, 30].map(days => (
+                    <option key={days} value={days}>{days} days</option>
+                  ))}
                 </select>
               </div>
-              
+
               <div>
-                <label className="form-label">Servings per meal</label>
-                <select {...register('servings')} className="input w-full">
-                  <option value={1}>1 person</option>
-                  <option value={2}>2 people</option>
-                  <option value={3}>3 people</option>
-                  <option value={4}>4 people</option>
-                  <option value={6}>6 people</option>
-                  <option value={8}>8 people</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Servings per person
+                </label>
+                <select
+                  {...register('servings', { required: true })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                >
+                  {[1, 2, 3, 4, 5, 6].map(num => (
+                    <option key={num} value={num}>{num} servings</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cooking Time Preference
+                </label>
+                <select
+                  {...register('cookingTime', { required: true })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                >
+                  <option value="minimal">Minimal (under 30 mins)</option>
+                  <option value="moderate">Moderate (30-60 mins)</option>
+                  <option value="extended">Extended (over 60 mins)</option>
                 </select>
               </div>
             </div>
@@ -251,59 +245,75 @@ const MealPlanGenerator = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Dietary Preferences & Goals</h2>
-              <p className="text-dark-300">Tell us about your dietary needs and health goals</p>
-            </div>
-
-            <div>
-              <label className="form-label mb-4">Dietary Preferences</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {dietaryOptions.map(option => {
-                  const isSelected = watch('dietaryPreferences')?.includes(option.value);
-                  return (
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Dietary Preferences</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Dietary Restrictions
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {dietaryOptions.map(option => (
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => handleMultiSelect('dietaryPreferences', option.value)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
-                        isSelected
-                          ? 'border-primary-500 bg-primary-500/10 text-primary-400'
-                          : 'border-dark-600 hover:border-dark-500 text-dark-300'
+                      onClick={() => toggleOption('dietaryPreferences', option.value)}
+                      className={`p-3 rounded-lg border text-left transition-colors ${
+                        watch('dietaryPreferences')?.includes(option.value)
+                          ? 'bg-orange-500 text-white border-orange-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300'
                       }`}
                     >
-                      <div className="text-2xl mb-1">{option.icon}</div>
-                      <div className="text-sm font-medium">{option.label}</div>
+                      {option.label}
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="form-label mb-4">Health Goals</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {goalOptions.map(option => {
-                  const isSelected = watch('goals')?.includes(option.value);
-                  return (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Allergies
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {allergyOptions.map(option => (
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => handleMultiSelect('goals', option.value)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
-                        isSelected
-                          ? 'border-secondary-500 bg-secondary-500/10 text-secondary-400'
-                          : 'border-dark-600 hover:border-dark-500 text-dark-300'
+                      onClick={() => toggleOption('allergies', option.value)}
+                      className={`p-3 rounded-lg border text-left transition-colors ${
+                        watch('allergies')?.includes(option.value)
+                          ? 'bg-red-500 text-white border-red-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-red-300'
                       }`}
                     >
-                      <div className="text-2xl mb-1">{option.icon}</div>
-                      <div className="text-sm font-medium">{option.label}</div>
+                      {option.label}
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Weight Goals
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {goalOptions.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => toggleOption('goals', option.value)}
+                      className={`p-3 rounded-lg border text-left transition-colors ${
+                        watch('goals')?.includes(option.value)
+                          ? 'bg-green-500 text-white border-green-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-green-300'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -314,69 +324,55 @@ const MealPlanGenerator = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Preferences & Restrictions</h2>
-              <p className="text-dark-300">Customize your meal plan preferences</p>
-            </div>
-
-            <div>
-              <label className="form-label mb-4">Cuisine Preferences (optional)</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {cuisineOptions.map(option => {
-                  const isSelected = watch('cuisinePreferences')?.includes(option.value);
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => handleMultiSelect('cuisinePreferences', option.value)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
-                        isSelected
-                          ? 'border-primary-500 bg-primary-500/10 text-primary-400'
-                          : 'border-dark-600 hover:border-dark-500 text-dark-300'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{option.icon}</div>
-                      <div className="text-sm font-medium">{option.label}</div>
-                    </button>
-                  );
-                })}
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Ingredients</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Ingredients you have
+                </label>
+                <div className="space-y-3">
+                  {ingredientFields.map((field, index) => (
+                    <div key={field.id} className="flex items-center space-x-3">
+                      <input
+                        {...register(`ingredients.${index}`)}
+                        placeholder="Enter ingredient (e.g., chicken, rice, broccoli)"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      />
+                      {ingredientFields.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeIngredient(index)}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <XMarkIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => appendIngredient('')}
+                    className="flex items-center text-orange-600 hover:text-orange-700 text-sm font-medium"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Add Ingredient
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="form-label mb-4">Meal Types to Include</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {mealTypeOptions.map(option => {
-                  const isSelected = watch('mealTypes')?.includes(option.value);
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => handleMultiSelect('mealTypes', option.value)}
-                      className={`p-4 rounded-lg border-2 transition-all text-center ${
-                        isSelected
-                          ? 'border-secondary-500 bg-secondary-500/10 text-secondary-400'
-                          : 'border-dark-600 hover:border-dark-500 text-dark-300'
-                      }`}
-                    >
-                      <div className="text-3xl mb-2">{option.icon}</div>
-                      <div className="font-medium">{option.label}</div>
-                    </button>
-                  );
-                })}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Ingredients to exclude
+                </label>
+                <input
+                  {...register('excludeIngredients')}
+                  placeholder="Enter ingredients to avoid, separated by commas"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                />
               </div>
-            </div>
-
-            <div>
-              <label className="form-label">Cooking Time Preference</label>
-              <select {...register('cookingTime')} className="input w-full">
-                <option value="minimal">Minimal (15-30 min)</option>
-                <option value="moderate">Moderate (30-60 min)</option>
-                <option value="extended">Extended (60+ min)</option>
-              </select>
             </div>
           </motion.div>
         );
@@ -386,67 +382,52 @@ const MealPlanGenerator = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Final Review</h2>
-              <p className="text-dark-300">Review your preferences and generate your meal plan</p>
-            </div>
-
-            <div className="card p-6 space-y-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Cuisine & Meals</h3>
+            
+            <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-white mb-2">Ingredients</h3>
-                <div className="flex flex-wrap gap-2">
-                  {watch('ingredients')?.filter(i => i.trim()).map((ingredient, index) => (
-                    <span key={index} className="badge badge-primary">{ingredient}</span>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Preferred Cuisines
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {cuisineOptions.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => toggleOption('cuisinePreferences', option.value)}
+                      className={`p-3 rounded-lg border text-left transition-colors ${
+                        watch('cuisinePreferences')?.includes(option.value)
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-white mb-2">Duration & Servings</h3>
-                  <p className="text-dark-300">{watch('duration')} days, {watch('servings')} servings per meal</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-white mb-2">Cooking Time</h3>
-                  <p className="text-dark-300 capitalize">{watch('cookingTime')} preparation time</p>
-                </div>
-              </div>
-
-              {watch('dietaryPreferences')?.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-white mb-2">Dietary Preferences</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {watch('dietaryPreferences').map(pref => (
-                      <span key={pref} className="badge badge-secondary">{pref}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {watch('goals')?.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-white mb-2">Health Goals</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {watch('goals').map(goal => (
-                      <span key={goal} className="badge badge-success">{goal.replace('-', ' ')}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-yellow-500 mb-1">AI Generation Notice</h4>
-                  <p className="text-yellow-200 text-sm">
-                    Your meal plan will be generated using AI based on your preferences. The process may take a few moments.
-                  </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Meal Types
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {mealTypeOptions.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => toggleOption('mealTypes', option.value)}
+                      className={`p-3 rounded-lg border text-left transition-colors ${
+                        watch('mealTypes')?.includes(option.value)
+                          ? 'bg-purple-500 text-white border-purple-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-purple-300'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -459,76 +440,64 @@ const MealPlanGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container-custom max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center space-x-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-4 py-2 mb-4"
-          >
-            <SparklesIcon className="w-5 h-5 text-primary-400" />
-            <span className="text-primary-400 font-medium">AI-Powered Meal Planning</span>
-          </motion.div>
-          
-          <h1 className="text-4xl font-bold text-gradient mb-4">
-            Generate Your Perfect Meal Plan
-          </h1>
-          <p className="text-dark-300 text-lg max-w-2xl mx-auto">
-            Let our AI create a personalized meal plan based on your ingredients, preferences, and goals
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
+        <ProgressBar />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+            <StepIndicator stepNum={1} title="Basic Info" icon={CpuChipIcon} />
+            <StepIndicator stepNum={2} title="Dietary" icon={HeartIcon} />
+            <StepIndicator stepNum={3} title="Ingredients" icon={SparklesIcon} />
+            <StepIndicator stepNum={4} title="Preferences" icon={ClockIcon} />
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {renderStep()}
+
+            {/* Navigation */}
+            <div className="flex justify-between mt-8">
+              <button
+                onClick={() => step > 1 && setStep(step - 1)}
+                disabled={step === 1}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
+                  step === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                Previous
+              </button>
+
+              {step < totalSteps ? (
+                <button
+                  onClick={() => step < totalSteps && setStep(step + 1)}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={generating}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                >
+                  {generating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate Meal Plan'
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-
-        {/* Progress Indicator */}
-        <StepIndicator />
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="card p-8 mb-8">
-            <StepContent />
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={prevStep}
-              disabled={step === 1}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-
-            {step < totalSteps ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                className="btn-primary"
-              >
-                Next Step
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={generating}
-                className="btn-primary flex items-center space-x-2 disabled:opacity-50"
-              >
-                {generating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Generating...</span>
-                  </>
-                ) : (
-                  <>
-                    <CpuChipIcon className="w-5 h-5" />
-                    <span>Generate Meal Plan</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        </form>
       </div>
     </div>
   );
