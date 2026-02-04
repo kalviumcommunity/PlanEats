@@ -32,32 +32,32 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden bg-cream">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center bg-black">
-        <div className="container-custom relative z-10">
+      <section className="relative min-h-screen flex items-center bg-gradient-to-b from-white to-orange-50">
+        <div className="container mx-auto px-4 md:px-6 max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center space-y-4 max-w-2xl mx-auto"
+            className="text-center space-y-6 max-w-3xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-black border border-yellow-600 rounded-full px-3 py-1">
-              <SparklesIcon className="w-4 h-4 text-yellow-400" />
-              <span className="text-yellow-400 text-sm font-medium">
+            <div className="inline-flex items-center space-x-2 bg-orange-50 border border-orange-200 rounded-full px-4 py-2">
+              <SparklesIcon className="w-5 h-5 text-orange-600" />
+              <span className="text-orange-600 text-sm font-medium">
                 AI-Powered Meal Planning
               </span>
             </div>
 
             {/* Main heading */}
-            <div className="space-y-3">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-                <span className="text-yellow-400">Smart Meal Planning</span>
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                <span className="text-orange-500">Smart Meal Planning</span>
                 <br />
-                <span className="text-yellow-100">Powered by AI</span>
+                <span className="text-sage-600">Powered by AI</span>
               </h1>
-              <p className="text-lg lg:text-xl text-yellow-200 leading-relaxed max-w-2xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
                 Transform your available ingredients into personalized meal plans with 
                 AI-powered recipe suggestions and nutrition tracking.
               </p>
@@ -68,17 +68,17 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center pt-6"
             >
               <Link 
                 to="/register" 
-                className="btn-primary text-base px-6 py-3 hover-glow"
+                className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-lg hover:shadow-xl border border-transparent transition-all duration-300"
               >
                 Start Planning Free
               </Link>
               <Link 
                 to="/recipes" 
-                className="btn-secondary text-base px-6 py-3"
+                className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-lg bg-white text-orange-600 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 border border-orange-200 transition-all duration-300"
               >
                 Browse Recipes
               </Link>
@@ -88,18 +88,18 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-black">
-        <div className="container-custom">
+      <section className="py-16 md:py-24 lg:py-32 bg-white">
+        <div className="container mx-auto px-4 md:px-6 max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-yellow-400 mb-4">
-              Everything you need for smart meal planning
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+              <span className="text-orange-500">Everything you need</span> <span className="text-sage-600">for smart meal planning</span>
             </h2>
-            <p className="text-xl text-yellow-200 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Discover how AI can revolutionize your approach to nutrition and meal preparation
             </p>
           </motion.div>
@@ -111,13 +111,20 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="card p-6 hover-lift space-y-4"
+                className="rounded-lg border text-card-foreground flex flex-col items-center text-center p-8 bg-white border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden"
               >
-                <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center border border-yellow-600">
-                  <feature.icon className="w-6 h-6 text-yellow-400" />
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-center mb-6 p-4 bg-orange-50 rounded-full group-hover:bg-orange-100 transition-colors duration-300">
+                    <feature.icon className="w-10 h-10 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4 text-sage-600 group-hover:text-orange-600 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-yellow-100">{feature.title}</h3>
-                <p className="text-yellow-200">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -125,23 +132,23 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-black">
-        <div className="container-custom">
+      <section className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-white to-orange-50">
+        <div className="container mx-auto px-4 md:px-6 max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="card-glass p-8 md:p-12 text-center space-y-6"
+            className="bg-white rounded-2xl p-8 md:p-12 text-center space-y-6 shadow-xl border border-gray-100"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-yellow-400">
+            <h2 className="text-3xl md:text-4xl font-bold text-sage-600">
               Ready to transform your meal planning?
             </h2>
-            <p className="text-xl text-yellow-200 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Join thousands of users who have revolutionized their approach to nutrition with AI-powered meal planning.
             </p>
             <Link 
               to="/register" 
-              className="btn-primary text-lg px-8 py-4 inline-flex items-center hover-glow"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Get Started Today
             </Link>

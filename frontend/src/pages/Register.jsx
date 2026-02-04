@@ -38,7 +38,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -48,15 +48,15 @@ const Register = () => {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-2xl">PE</span>
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gradient">
+          <h2 className="mt-6 text-3xl font-bold text-orange-600">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-dark-400">
-            Join PlanEats and start your smart meal planning journey
+          <p className="mt-2 text-sm text-gray-600">
+            Join PlanEats to start your smart meal planning journey
           </p>
         </div>
 
@@ -65,76 +65,76 @@ const Register = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 space-y-6"
+          className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
           onSubmit={handleSubmit(onSubmit)}
         >
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-500/10 border border-red-500/20 rounded-lg p-3"
+              className="bg-red-50 border border-red-200 rounded-lg p-3"
             >
-              <p className="text-red-400 text-sm">{error}</p>
+              <p className="text-red-600 text-sm">{error}</p>
             </motion.div>
           )}
 
           <div className="space-y-4">
             {/* Name fields */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label htmlFor="firstName" className="form-label">
+              <div className="space-y-2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                   First Name
                 </label>
                 <input
                   id="firstName"
                   type="text"
-                  className={`input ${errors.firstName ? 'input-error' : ''}`}
+                  autoComplete="given-name"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors ${
+                    errors.firstName ? 'border-red-300' : ''
+                  }`}
                   placeholder="First name"
                   {...register('firstName', {
                     required: 'First name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'First name must be at least 2 characters',
-                    },
                   })}
                 />
                 {errors.firstName && (
-                  <p className="form-error">{errors.firstName.message}</p>
+                  <p className="text-red-500 text-sm">{errors.firstName.message}</p>
                 )}
               </div>
-
-              <div className="form-group">
-                <label htmlFor="lastName" className="form-label">
+              <div className="space-y-2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                   Last Name
                 </label>
                 <input
                   id="lastName"
                   type="text"
-                  className={`input ${errors.lastName ? 'input-error' : ''}`}
+                  autoComplete="family-name"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors ${
+                    errors.lastName ? 'border-red-300' : ''
+                  }`}
                   placeholder="Last name"
                   {...register('lastName', {
                     required: 'Last name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Last name must be at least 2 characters',
-                    },
                   })}
                 />
                 {errors.lastName && (
-                  <p className="form-error">{errors.lastName.message}</p>
+                  <p className="text-red-500 text-sm">{errors.lastName.message}</p>
                 )}
               </div>
             </div>
 
             {/* Username */}
-            <div className="form-group">
-              <label htmlFor="username" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
               </label>
               <input
                 id="username"
                 type="text"
-                className={`input ${errors.username ? 'input-error' : ''}`}
+                autoComplete="username"
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors ${
+                  errors.username ? 'border-red-300' : ''
+                }`}
                 placeholder="Choose a username"
                 {...register('username', {
                   required: 'Username is required',
@@ -142,27 +142,25 @@ const Register = () => {
                     value: 3,
                     message: 'Username must be at least 3 characters',
                   },
-                  pattern: {
-                    value: /^[a-zA-Z0-9_-]+$/,
-                    message: 'Username can only contain letters, numbers, hyphens, and underscores',
-                  },
                 })}
               />
               {errors.username && (
-                <p className="form-error">{errors.username.message}</p>
+                <p className="text-red-500 text-sm">{errors.username.message}</p>
               )}
             </div>
 
             {/* Email */}
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`input ${errors.email ? 'input-error' : ''}`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors ${
+                  errors.email ? 'border-red-300' : ''
+                }`}
                 placeholder="Enter your email"
                 {...register('email', {
                   required: 'Email is required',
@@ -173,13 +171,13 @@ const Register = () => {
                 })}
               />
               {errors.email && (
-                <p className="form-error">{errors.email.message}</p>
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password */}
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="relative">
@@ -187,17 +185,15 @@ const Register = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors pr-10 ${
+                    errors.password ? 'border-red-300' : ''
+                  }`}
                   placeholder="Create a password"
                   {...register('password', {
                     required: 'Password is required',
                     minLength: {
                       value: 6,
                       message: 'Password must be at least 6 characters',
-                    },
-                    pattern: {
-                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                      message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
                     },
                   })}
                 />
@@ -207,20 +203,20 @@ const Register = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-dark-400" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-dark-400" />
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
               {errors.password && (
-                <p className="form-error">{errors.password.message}</p>
+                <p className="text-red-500 text-sm">{errors.password.message}</p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <div className="relative">
@@ -228,7 +224,9 @@ const Register = () => {
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  className={`input pr-10 ${errors.confirmPassword ? 'input-error' : ''}`}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors pr-10 ${
+                    errors.confirmPassword ? 'border-red-300' : ''
+                  }`}
                   placeholder="Confirm your password"
                   {...register('confirmPassword', {
                     required: 'Please confirm your password',
@@ -242,48 +240,48 @@ const Register = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-dark-400" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-dark-400" />
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="form-error">{errors.confirmPassword.message}</p>
+                <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
               )}
             </div>
           </div>
 
-          {/* Terms and conditions */}
-          <div className="flex items-start">
+          {/* Terms and Conditions */}
+          <div className="flex items-center">
             <input
-              id="acceptTerms"
+              id="terms"
               type="checkbox"
-              className="h-4 w-4 bg-dark-800 border-dark-600 rounded focus:ring-primary-500 focus:ring-2 mt-1"
-              {...register('acceptTerms', {
-                required: 'You must accept the terms and conditions',
+              className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              {...register('terms', {
+                required: 'You must agree to the terms and conditions',
               })}
             />
-            <label htmlFor="acceptTerms" className="ml-2 text-sm text-dark-300">
+            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
               I agree to the{' '}
-              <Link to="/terms" className="text-primary-400 hover:text-primary-300">
-                Terms and Conditions
+              <Link to="/terms" className="text-orange-600 hover:text-orange-700">
+                Terms of Service
               </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-primary-400 hover:text-primary-300">
+              <Link to="/privacy" className="text-orange-600 hover:text-orange-700">
                 Privacy Policy
               </Link>
             </label>
           </div>
-          {errors.acceptTerms && (
-            <p className="form-error">{errors.acceptTerms.message}</p>
+          {errors.terms && (
+            <p className="text-red-500 text-sm">{errors.terms.message}</p>
           )}
 
           {/* Submit button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-primary w-full py-3 text-base"
+            className="w-full inline-flex items-center justify-center px-4 py-3 text-base font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-sm border border-transparent transition-all duration-300"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -297,11 +295,11 @@ const Register = () => {
 
           {/* Sign in link */}
           <div className="text-center">
-            <p className="text-sm text-dark-400">
+            <p className="text-sm text-gray-600">
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="text-primary-400 hover:text-primary-300 font-medium"
+                className="text-orange-600 hover:text-orange-700 font-medium"
               >
                 Sign in here
               </Link>

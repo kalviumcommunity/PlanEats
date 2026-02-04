@@ -8,44 +8,44 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Black and Yellow theme
-        primary: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
+        // FoodiePrep inspired color palette
+        orange: {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316', // Main orange
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
         },
-        secondary: {
+        sage: {
           50: '#f8fafc',
           100: '#f1f5f9',
           200: '#e2e8f0',
           300: '#cbd5e1',
           400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
+          500: '#8FBC8F', // Sage green
+          600: '#6B8E23', // Main sage
+          700: '#556B2F',
+          800: '#3D5213',
+          900: '#2F3E0F',
         },
-        dark: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#000000', // Pure black
-        }
+        cream: {
+          50: '#fefdfb',
+          100: '#fdf8f0',
+          200: '#fbeed5',
+          300: '#f8e3c0',
+          400: '#f5d8ab',
+          500: '#f2cd96',
+          600: '#efc281',
+          700: '#ecb76c',
+          800: '#e9ac57',
+          900: '#e6a142',
+        },
+        'orange-dark': '#c2410c',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

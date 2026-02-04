@@ -26,7 +26,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -36,14 +36,14 @@ const Login = () => {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-2xl">PE</span>
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gradient">
+          <h2 className="mt-6 text-3xl font-bold text-orange-600">
             Welcome back
           </h2>
-          <p className="mt-2 text-sm text-dark-400">
+          <p className="mt-2 text-sm text-gray-600">
             Sign in to your PlanEats account
           </p>
         </div>
@@ -53,30 +53,32 @@ const Login = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 space-y-6"
+          className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
           onSubmit={handleSubmit(onSubmit)}
         >
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-500/10 border border-red-500/20 rounded-lg p-3"
+              className="bg-red-50 border border-red-200 rounded-lg p-3"
             >
-              <p className="text-red-400 text-sm">{error}</p>
+              <p className="text-red-600 text-sm">{error}</p>
             </motion.div>
           )}
 
           <div className="space-y-4">
             {/* Email */}
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`input ${errors.email ? 'input-error' : ''}`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors ${
+                  errors.email ? 'border-red-300' : ''
+                }`}
                 placeholder="Enter your email"
                 {...register('email', {
                   required: 'Email is required',
@@ -87,13 +89,13 @@ const Login = () => {
                 })}
               />
               {errors.email && (
-                <p className="form-error">{errors.email.message}</p>
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password */}
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="relative">
@@ -101,7 +103,9 @@ const Login = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors pr-10 ${
+                    errors.password ? 'border-red-300' : ''
+                  }`}
                   placeholder="Enter your password"
                   {...register('password', {
                     required: 'Password is required',
@@ -117,14 +121,14 @@ const Login = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-dark-400" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-dark-400" />
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
               {errors.password && (
-                <p className="form-error">{errors.password.message}</p>
+                <p className="text-red-500 text-sm">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -135,16 +139,16 @@ const Login = () => {
               <input
                 id="rememberMe"
                 type="checkbox"
-                className="h-4 w-4 bg-dark-800 border-dark-600 rounded focus:ring-primary-500 focus:ring-2"
+                className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
                 {...register('rememberMe')}
               />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-dark-300">
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">
                 Remember me
               </label>
             </div>
             <Link
               to="/forgot-password"
-              className="text-sm text-primary-400 hover:text-primary-300"
+              className="text-sm text-orange-600 hover:text-orange-700"
             >
               Forgot password?
             </Link>
@@ -154,7 +158,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-primary w-full py-3 text-base"
+            className="w-full inline-flex items-center justify-center px-4 py-3 text-base font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-sm border border-transparent transition-all duration-300"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -168,11 +172,11 @@ const Login = () => {
 
           {/* Sign up link */}
           <div className="text-center">
-            <p className="text-sm text-dark-400">
+            <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="text-primary-400 hover:text-primary-300 font-medium"
+                className="text-orange-600 hover:text-orange-700 font-medium"
               >
                 Sign up here
               </Link>
