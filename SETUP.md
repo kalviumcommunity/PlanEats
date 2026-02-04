@@ -326,4 +326,22 @@ The application is built with mobile-first design:
 - API response caching
 - Frontend state management optimization
 
+## 🖼️ Recipe Images Feature
+
+The PlanEats application now includes rich recipe imagery support:
+
+- **Database**: Recipe model supports an `images` array with `url`, `alt`, and `isPrimary` fields
+- **Frontend**: Automatic display of recipe images in both list and detail views
+- **Fallback**: Dynamic food-related images from Unsplash when no images are available
+- **Gallery**: Additional images displayed in a responsive gallery on recipe detail pages
+
+To populate existing recipes with sample images, run the seed script after setting up the database:
+
+```bash
+cd backend
+node scripts/add_recipe_images.js
+```
+
+This will add high-quality food photography to your recipe database.
+
 This comprehensive setup guide provides everything needed to complete the PlanEats AI application. The backend foundation is complete, and the frontend structure is ready for component implementation following the provided examples and architecture.

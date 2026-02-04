@@ -219,76 +219,96 @@ const RecipeDetails = () => {
             Back to Recipes
           </button>
           
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">{recipe.title}</h1>
-              <p className="text-gray-600 text-lg mb-6">{recipe.description}</p>
-              
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
-                <div className="flex items-center">
-                  <UserGroupIcon className="h-5 w-5 mr-2 text-orange-500" />
-                  <span>{recipe.servings} servings</span>
+          <div className="mb-8">
+            {/* Main recipe image */}
+            <div className="relative h-96 w-full rounded-xl overflow-hidden mb-6">
+              {recipe.images && recipe.images.length > 0 ? (
+                <img 
+                  src={recipe.images && recipe.images.length > 0 ? recipe.images[0].url : `https://source.unsplash.com/1200x600/?food,recipe,dish,meal,${recipe.title.replace(/\s+/g, '-')}`}
+                  alt={recipe.images && recipe.images.length > 0 ? recipe.images[0].alt || recipe.title : `${recipe.title} recipe`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-orange-200 to-orange-300 flex items-center justify-center">
+                  <div className="text-center text-orange-600">
+                    <SparklesIcon className="h-16 w-16 mx-auto" />
+                    <p className="text-lg font-medium mt-2">{recipe.title}</p>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <ClockIcon className="h-5 w-5 mr-2 text-orange-500" />
-                  <span>{recipe.prepTime}m prep, {recipe.cookTime}m cook</span>
-                </div>
-                <div className="flex items-center">
-                  <StarIcon className="h-5 w-5 mr-2 text-orange-500" />
-                  <span>{recipe.rating?.average?.toFixed(1) || 'New'} ({recipe.rating?.count || 0} reviews)</span>
-                </div>
-                <div className="flex items-center">
-                  <SparklesIcon className="h-5 w-5 mr-2 text-orange-500" />
-                  <span className="capitalize">{recipe.difficulty}</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mb-6">
-                {recipe.dietaryTags?.map(tag => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {recipe.cuisine && (
-                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
-                    {recipe.cuisine}
-                  </span>
-                )}
-                {recipe.mealType?.map(type => (
-                  <span
-                    key={type}
-                    className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full"
-                  >
-                    {type}
-                  </span>
-                ))}
-              </div>
+              )}
             </div>
             
-            <div className="flex items-start space-x-3">
-              <button
-                onClick={toggleFavorite}
-                className={`p-3 rounded-full ${
-                  isFavorited
-                    ? 'bg-red-100 text-red-500 hover:bg-red-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600'
-                } transition-colors`}
-              >
-                {isFavorited ? (
-                  <HeartIconSolid className="h-6 w-6" />
-                ) : (
-                  <HeartIcon className="h-6 w-6" />
-                )}
-              </button>
-              <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
-                <PrinterIcon className="h-6 w-6" />
-              </button>
-              <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
-                <ShareIcon className="h-6 w-6" />
-              </button>
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div className="flex-1">
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">{recipe.title}</h1>
+                <p className="text-gray-600 text-lg mb-6">{recipe.description}</p>
+                
+                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
+                  <div className="flex items-center">
+                    <UserGroupIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    <span>{recipe.servings} servings</span>
+                  </div>
+                  <div className="flex items-center">
+                    <ClockIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    <span>{recipe.prepTime}m prep, {recipe.cookTime}m cook</span>
+                  </div>
+                  <div className="flex items-center">
+                    <StarIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    <span>{recipe.rating?.average?.toFixed(1) || 'New'} ({recipe.rating?.count || 0} reviews)</span>
+                  </div>
+                  <div className="flex items-center">
+                    <SparklesIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    <span className="capitalize">{recipe.difficulty}</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {recipe.dietaryTags?.map(tag => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {recipe.cuisine && (
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                      {recipe.cuisine}
+                    </span>
+                  )}
+                  {recipe.mealType?.map(type => (
+                    <span
+                      key={type}
+                      className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full"
+                    >
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <button
+                  onClick={toggleFavorite}
+                  className={`p-3 rounded-full ${
+                    isFavorited
+                      ? 'bg-red-100 text-red-500 hover:bg-red-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600'
+                  } transition-colors`}
+                >
+                  {isFavorited ? (
+                    <HeartIconSolid className="h-6 w-6" />
+                  ) : (
+                    <HeartIcon className="h-6 w-6" />
+                  )}
+                </button>
+                <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
+                  <PrinterIcon className="h-6 w-6" />
+                </button>
+                <button className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-orange-100 hover:text-orange-600 transition-colors">
+                  <ShareIcon className="h-6 w-6" />
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -474,6 +494,24 @@ const RecipeDetails = () => {
           </div>
         </div>
       </div>
+      
+      {/* Additional recipe images gallery */}
+      {recipe.images && recipe.images.length > 1 && (
+        <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">More Images</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {recipe.images.slice(1).map((image, index) => (
+              <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img 
+                  src={image.url}
+                  alt={image.alt || `Recipe image ${index + 2}`}
+                  className="w-full h-full object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

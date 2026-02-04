@@ -118,10 +118,18 @@ const Recipes = () => {
     >
       <div className="relative">
         <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-          <div className="text-center text-orange-600">
-            <SparklesIcon className="h-12 w-12 mx-auto" />
-            <p className="text-sm font-medium mt-2">{recipe.title}</p>
-          </div>
+          {recipe.images && recipe.images.length > 0 ? (
+            <img 
+              src={recipe.images && recipe.images.length > 0 ? recipe.images[0].url : `https://source.unsplash.com/800x400/?food,recipe,dish,meal`}
+              alt={recipe.images && recipe.images.length > 0 ? recipe.images[0].alt || recipe.title : `${recipe.title} recipe`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-center text-orange-600">
+              <SparklesIcon className="h-12 w-12 mx-auto" />
+              <p className="text-sm font-medium mt-2">{recipe.title}</p>
+            </div>
+          )}
         </div>
         {isAuthenticated() && (
           <button

@@ -27,6 +27,66 @@ This tool helps users efficiently use their ingredients, stick to their dietary 
 
 ---
 
+## Adding Recipe Images
+
+The PlanEats application supports rich recipe imagery to enhance the user experience. Recipes can have multiple images with a primary image and alternate views.
+
+### Database Schema
+
+The Recipe model includes an `images` field that accepts an array of image objects:
+
+```javascript
+images: [{
+  url: String,
+  alt: String,
+  isPrimary: { type: Boolean, default: false }
+}]
+```
+
+### Automatic Image Population
+
+To populate existing recipes with real images:
+
+1. Ensure MongoDB is running
+2. Navigate to the backend directory: `cd backend`
+3. Run the seed script: `node scripts/add_recipe_images.js`
+
+This script will add high-quality food photography from Unsplash to existing recipes.
+
+### Manual Image Addition
+
+Images can be added to recipes via the API:
+
+- **Create Recipe**: `POST /api/recipes` - include `images` field in request body
+- **Update Recipe**: `PUT /api/recipes/:id` - include `images` field in request body
+
+Example request body:
+
+```json
+{
+  "images": [
+    {
+      "url": "https://example.com/primary-image.jpg",
+      "alt": "Description of primary image",
+      "isPrimary": true
+    },
+    {
+      "url": "https://example.com/secondary-image.jpg",
+      "alt": "Description of secondary image",
+      "isPrimary": false
+    }
+  ]
+}
+```
+
+### Frontend Display
+
+The frontend automatically displays recipe images:
+
+- **Recipe List View**: Shows the primary image of each recipe
+- **Recipe Detail View**: Features a prominent main image and a gallery of additional images
+- **Fallback Images**: Uses dynamic food-related images from Unsplash when no images are available
+
 ## Key Concepts
 
 ### System and User Prompt
