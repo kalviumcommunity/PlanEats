@@ -123,20 +123,24 @@ const MealPlanGenerator = () => {
       const filteredIngredients = data.ingredients.filter(ing => ing.trim() !== '');
       
       const planData = {
-        ...data,
         ingredients: filteredIngredients,
-        aiGenerated: true,
-        aiModel: 'gemini',
-        title: `AI Meal Plan - ${new Date().toLocaleDateString()}`,
-        description: 'AI-generated meal plan based on your preferences and ingredients'
+        duration: data.duration || 7, // Default to 7 days
+        dietaryPreferences: data.dietaryPreferences || [],
+        allergies: data.allergies || [],
+        goals: data.goals || ['maintenance'],
+        cuisinePreferences: data.cuisinePreferences || [],
+        cookingTime: data.cookingTime || 'moderate',
+        mealTypes: data.mealTypes || ['breakfast', 'lunch', 'dinner'],
+        servings: data.servings || 2
       };
 
-      const response = await mealPlanService.createMealPlan(planData);
+      // Use the generate endpoint instead of create
+      const response = await mealPlanService.generateMealPlan(planData);
       toast.success('Meal plan generated successfully!');
       navigate(`/meal-plans/${response.mealPlan._id}`);
     } catch (error) {
       console.error('Error generating meal plan:', error);
-      toast.error('Failed to generate meal plan. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to generate meal plan. Please try again.');
     } finally {
       setGenerating(false);
     }
