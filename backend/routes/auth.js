@@ -103,6 +103,8 @@ router.post('/register', registerValidation, handleValidationErrors, async (req,
         email: user.email,
         profile: user.profile,
         dietaryPreferences: user.dietaryPreferences,
+        isAdmin: user.isAdmin,
+        role: user.role,
         createdAt: user.createdAt
       }
     });
@@ -167,6 +169,8 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
         profile: user.profile,
         dietaryPreferences: user.dietaryPreferences,
         preferences: user.preferences,
+        isAdmin: user.isAdmin,
+        role: user.role,
         lastLogin: user.lastLogin
       }
     });
@@ -219,6 +223,8 @@ router.get('/me', auth, async (req, res) => {
         dislikedIngredients: user.dislikedIngredients,
         nutritionGoals: user.nutritionGoals,
         preferences: user.preferences,
+        isAdmin: user.isAdmin,
+        role: user.role,
         savedRecipes: user.savedRecipes,
         mealPlans: user.mealPlans,
         createdAt: user.createdAt,
