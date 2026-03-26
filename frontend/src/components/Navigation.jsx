@@ -6,14 +6,15 @@ import {
   XMarkIcon,
   UserIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const { user, logout, isAuthenticated } = useAuthStore();
+  const { user, logout, isAuthenticated, isAdmin } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -78,6 +79,24 @@ const Navigation = () => {
           >
             Dashboard
           </NavLink>
+          {isAdmin() && (
+            <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) =>
+                `px-3 py-2 text-sm font-medium ${
+                  isActive 
+                    ? 'text-orange-600 bg-orange-50 border border-orange-200' 
+                    : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50'
+                } rounded-lg transition-colors ${mobile ? 'block' : ''}`
+              }
+              onClick={() => mobile && setIsOpen(false)}
+            >
+              <span className="flex items-center">
+                <ShieldCheckIcon className="w-4 h-4 mr-1" />
+                Admin
+              </span>
+            </NavLink>
+          )}
         </>
       )}
     </>

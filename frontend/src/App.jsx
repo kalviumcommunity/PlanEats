@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/authStore';
 // Components
 import Navigation from './components/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -16,6 +17,9 @@ import RecipeDetails from './pages/RecipeDetails';
 import MealPlans from './pages/MealPlans';
 import MealPlanGenerator from './pages/MealPlanGenerator';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import RecipeModeration from './pages/admin/RecipeModeration';
 
 function App() {
   const { initializeAuth, isAuthenticated } = useAuthStore();
@@ -69,6 +73,25 @@ function App() {
           <ProtectedRoute>
             <Profile />
           </ProtectedRoute>
+        } />
+
+        {/* Admin routes - only accessible by admin users */}
+        <Route path="/admin/dashboard" element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        } />
+        
+        <Route path="/admin/users" element={
+          <AdminRoute>
+            <UserManagement />
+          </AdminRoute>
+        } />
+        
+        <Route path="/admin/recipes" element={
+          <AdminRoute>
+            <RecipeModeration />
+          </AdminRoute>
         } />
 
         {/* Catch all route */}

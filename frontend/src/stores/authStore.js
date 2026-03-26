@@ -6,13 +6,17 @@ export const useAuthStore = create((set, get) => ({
       user: null,
       isLoading: false,
       error: null,
+      isAdminUser: false,
 
       // Login action
       login: async (email, password, rememberMe = false) => {
         set({ isLoading: true, error: null });
         try {
           const data = await authService.login(email, password, rememberMe);
-          set({ user: data.user, isLoading: false });
+          const isAdminUser = data.user?.role === 'admin' || 
+                             data.user?.role === 'super-admin' || 
+                             data.user?.isAdmin === true;
+          set({ user: data.user, isAdminUser, isLoading: false });
           toast.success('Login successful!');
           return data;
         } catch (error) {
@@ -28,7 +32,10 @@ export const useAuthStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const data = await authService.register(userData);
-          set({ user: data.user, isLoading: false });
+          const isAdminUser = data.user?.role === 'admin' || 
+                             data.user?.role === 'super-admin' || 
+                             data.user?.isAdmin === true;
+          set({ user: data.user, isAdminUser, isLoading: false });
           toast.success('Registration successful!');
           return data;
         } catch (error) {
@@ -71,7 +78,10 @@ export const useAuthStore = create((set, get) => ({
       initializeAuth: () => {
         const user = authService.getCurrentUserFromStorage();
         if (user) {
-          set({ user });
+          const isAdminUser = user.role === 'admin' || 
+                             user.role === 'super-admin' || 
+                             user.isAdmin === true;
+          set({ user, isAdminUser });
         }
       },
 
@@ -82,6 +92,12 @@ export const useAuthStore = create((set, get) => ({
       isAuthenticated: () => {
         const { user } = get();
         return !!user && authService.isAuthenticated();
+      },
+
+      // Check if user is admin
+      isAdmin: () => {
+        const { isAdminUser } = get();
+        return isAdminUser;
       }
     })
   );

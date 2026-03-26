@@ -82,8 +82,13 @@ const adminAuth = async (req, res, next) => {
     // First check normal authentication
     await auth(req, res, () => {});
     
-    // Check if user is admin (you can define admin logic here)
-    if (!req.user.isAdmin && req.user.email !== process.env.ADMIN_EMAIL) {
+    // Check if user is admin using role, isAdmin flag, or ADMIN_EMAIL from env
+    const isAdmin = req.user.role === 'admin' || 
+                    req.user.role === 'super-admin' || 
+                    req.user.isAdmin === true || 
+                    req.user.email === process.env.ADMIN_EMAIL;
+    
+    if (!isAdmin) {
       return res.status(403).json({ 
         error: 'Access forbidden', 
         message: 'Admin privileges required' 
@@ -96,6 +101,30 @@ const adminAuth = async (req, res, next) => {
     res.status(500).json({ 
       error: 'Server error', 
       message: 'Admin authentication failed' 
+    });
+  }
+};
+
+// Super admin middleware (only super-admin access)
+const superAdminAuth = async (req, res, next) => {
+  try {
+    // First check normal authentication
+    await auth(req, res, () => {});
+    
+    // Check if user is super-admin
+    if (req.user.role !== 'super-admin') {
+      return res.status(403).json({ 
+        error: 'Access forbidden', 
+        message: 'Super admin privileges required' 
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Super admin auth middleware error:', error);
+    res.status(500).json({ 
+      error: 'Server error', 
+      message: 'Super admin authentication failed' 
     });
   }
 };
@@ -221,6 +250,7 @@ module.exports = {
   auth,
   optionalAuth,
   adminAuth,
+  superAdminAuth,
   rateLimit,
   validateObjectId,
   errorHandler,

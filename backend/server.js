@@ -15,6 +15,7 @@ const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const preferenceRoutes = require('./routes/preferences');
 const shoppingListRoutes = require('./routes/shoppingLists');
+const adminRoutes = require('./routes/admin');
 
 // Create Express app
 const app = express();
@@ -57,6 +58,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/preferences', preferenceRoutes);
 app.use('/api/shopping-lists', shoppingListRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

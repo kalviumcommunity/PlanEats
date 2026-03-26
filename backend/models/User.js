@@ -73,6 +73,15 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'super-admin'],
+    default: 'user'
+  },
   lastLogin: Date,
   preferences: {
     theme: {
