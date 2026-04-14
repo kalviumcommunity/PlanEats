@@ -20,6 +20,8 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import RecipeModeration from './pages/admin/RecipeModeration';
+import Analytics from './pages/admin/Analytics';
+import Settings from './pages/admin/Settings';
 
 function App() {
   const { initializeAuth, isAuthenticated } = useAuthStore();
@@ -82,6 +84,12 @@ function App() {
           </AdminRoute>
         } />
         
+        <Route path="/admin/analytics" element={
+          <AdminRoute>
+            <Analytics />
+          </AdminRoute>
+        } />
+        
         <Route path="/admin/users" element={
           <AdminRoute>
             <UserManagement />
@@ -91,6 +99,12 @@ function App() {
         <Route path="/admin/recipes" element={
           <AdminRoute>
             <RecipeModeration />
+          </AdminRoute>
+        } />
+
+        <Route path="/admin/settings" element={
+          <AdminRoute>
+            <Settings />
           </AdminRoute>
         } />
 

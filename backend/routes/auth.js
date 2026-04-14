@@ -53,6 +53,7 @@ const generateToken = (userId) => {
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('Validation Error on', req.path, ':', JSON.stringify(errors.array(), null, 2));
     return res.status(400).json({
       error: 'Validation Error',
       message: 'Invalid input data',
