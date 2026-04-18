@@ -150,7 +150,7 @@ Example response format:
   // Call Gemini API
   async callGeminiAPI(systemPrompt, userPrompt) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${this.geminiApiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiApiKey}`;
       
       const payload = {
         contents: [
@@ -161,19 +161,18 @@ Example response format:
         ],
         generationConfig: {
           temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
           maxOutputTokens: 8192
         }
       };
 
-      console.log('Calling Gemini API with payload:', JSON.stringify(payload, null, 2));
-
+      console.log('--- GEMINI API CALL START ---');
+      console.log('Model: gemini-2.5-flash');
+      
       const response = await axios.post(url, payload, {
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 60000 // Increase timeout to 60 seconds
+        timeout: 90000 // 90 seconds
       });
 
       console.log('Gemini API response status:', response.status);
@@ -186,7 +185,7 @@ Example response format:
           return {
             success: true,
             content: content.parts[0].text,
-            model: 'gemini-2.5-flash-preview-05-20'
+            model: 'gemini-2.5-flash'
           };
         } else {
           console.log('Gemini API response missing content parts');
@@ -304,12 +303,21 @@ Example response format:
         throw new Error('Invalid meals format');
       }
 
-      // Process meals to ensure proper format
+      const dayNamesEnum = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      
       const processedMeals = parsed.meals.map((day, index) => {
+        const date = day.date ? new Date(day.date) : new Date();
+        // If date is invalid, use today + offset
+        const finalDate = isNaN(date.getTime()) ? new Date(new Date().setDate(new Date().getDate() + index)) : date;
+        
+        let dayName = day.dayName || dayNamesEnum[finalDate.getDay()];
+        // Ensure dayName matches enum exactly (Capitalized)
+        dayName = dayNamesEnum.find(d => d.toLowerCase() === dayName.toLowerCase()) || dayNamesEnum[finalDate.getDay()];
+
         const processedDay = {
           day: day.day || index + 1,
-          date: day.date || new Date(),
-          dayName: day.dayName || ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()],
+          date: finalDate,
+          dayName: dayName,
           breakfast: day.breakfast || {},
           lunch: day.lunch || {},
           dinner: day.dinner || {},
@@ -461,7 +469,11 @@ Example response format:
         ...parsedResponse
       };
     } catch (error) {
-      console.error('Generate meal plan error:', error);
+      console.error('CRITICAL: AIService.generateMealPlan error:', error);
+      console.error('Error stack:', error.stack);
+      if (error.response) {
+        console.error('Error response data:', JSON.stringify(error.response.data, null, 2));
+      }
       return {
         success: false,
         error: `Meal plan generation failed: ${error.message}`

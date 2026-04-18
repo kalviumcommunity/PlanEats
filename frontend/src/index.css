@@ -30,6 +30,10 @@
     @apply ring-2 ring-yellow-500 ring-opacity-50 ring-offset-2 ring-offset-black;
   }
 
+  input, textarea, select {
+    @apply text-black placeholder-gray-500;
+  }
+
   /* Smooth transitions for all elements */
   * {
     @apply transition-colors duration-200 ease-in-out;
@@ -37,7 +41,7 @@
 
   /* Body styles */
   body {
-    @apply bg-black text-yellow-100;
+    @apply bg-white text-gray-900;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     font-variation-settings: 'opsz' 32;
   }
@@ -81,7 +85,12 @@
 
   /* Input styles */
   .input {
-    @apply w-full px-4 py-3 bg-black border border-yellow-600 rounded-lg text-yellow-100 placeholder-yellow-700 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:ring-opacity-50 transition-colors;
+    @apply w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:ring-opacity-50 transition-colors;
+  }
+
+  /* Admin/Dark Input variant */
+  .input-dark {
+    @apply w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:ring-opacity-50 transition-colors;
   }
 
   .input-error {

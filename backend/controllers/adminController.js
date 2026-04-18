@@ -429,9 +429,15 @@ exports.getAllRecipes = async (req, res) => {
 // @access  Private/Admin
 exports.updateRecipe = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+    delete updateData._id;
+    delete updateData.author;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+
     const recipe = await Recipe.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     ).populate('author', 'username email');
 

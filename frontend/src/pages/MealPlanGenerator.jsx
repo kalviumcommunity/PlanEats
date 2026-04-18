@@ -122,16 +122,22 @@ const MealPlanGenerator = () => {
       // Filter out empty ingredients
       const filteredIngredients = data.ingredients.filter(ing => ing.trim() !== '');
       
+      // Process excludeIngredients string to array if it's a string
+      const excludedArray = typeof data.excludeIngredients === 'string' 
+        ? data.excludeIngredients.split(',').map(i => i.trim()).filter(i => i !== '')
+        : (data.excludeIngredients || []);
+
       const planData = {
         ingredients: filteredIngredients,
-        duration: data.duration || 7, // Default to 7 days
+        duration: parseInt(data.duration) || 7, // Ensure integer
         dietaryPreferences: data.dietaryPreferences || [],
         allergies: data.allergies || [],
         goals: data.goals || ['maintenance'],
+        excludeIngredients: excludedArray,
         cuisinePreferences: data.cuisinePreferences || [],
         cookingTime: data.cookingTime || 'moderate',
         mealTypes: data.mealTypes || ['breakfast', 'lunch', 'dinner'],
-        servings: data.servings || 2
+        servings: parseInt(data.servings) || 2 // Ensure integer
       };
 
       // Use the generate endpoint instead of create
