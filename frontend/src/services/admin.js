@@ -68,6 +68,39 @@ const adminService = {
       rejectionReason
     });
     return response.data;
+  },
+
+  async getAllRecipes(params = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      cuisine = '',
+      difficulty = '',
+      isVerified = ''
+    } = params;
+
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      search,
+      cuisine,
+      difficulty,
+      isVerified
+    });
+
+    const response = await api.get(`/admin/recipes?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  async updateRecipe(id, recipeData) {
+    const response = await api.put(`/admin/recipes/${id}`, recipeData);
+    return response.data;
+  },
+
+  async deleteRecipe(id) {
+    const response = await api.delete(`/admin/recipes/${id}`);
+    return response.data;
   }
 };
 

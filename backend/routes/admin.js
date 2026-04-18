@@ -8,6 +8,9 @@ const {
   deleteUser,
   getPendingRecipes,
   verifyRecipe,
+  getAllRecipes,
+  updateRecipe,
+  deleteRecipe,
   getAnalytics
 } = require('../controllers/adminController');
 
@@ -26,8 +29,11 @@ router.get('/users/:id', getUserById);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 
-// Recipe moderation routes
+// Recipe moderation & management routes
+router.get('/recipes', getAllRecipes);
 router.get('/recipes/pending', getPendingRecipes);
 router.put('/recipes/:id/verify', verifyRecipe);
+router.put('/recipes/:id', updateRecipe);
+router.delete('/recipes/:id', deleteRecipe);
 
 module.exports = router;

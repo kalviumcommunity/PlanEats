@@ -19,7 +19,7 @@ import MealPlanGenerator from './pages/MealPlanGenerator';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
-import RecipeModeration from './pages/admin/RecipeModeration';
+import RecipeManagement from './pages/admin/RecipeManagement';
 import Analytics from './pages/admin/Analytics';
 import Settings from './pages/admin/Settings';
 
@@ -98,7 +98,7 @@ function App() {
         
         <Route path="/admin/recipes" element={
           <AdminRoute>
-            <RecipeModeration />
+            <RecipeManagement />
           </AdminRoute>
         } />
 

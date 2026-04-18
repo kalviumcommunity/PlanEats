@@ -358,3 +358,125 @@ exports.getAnalytics = async (req, res) => {
     });
   }
 };
+// @desc    Get all recipes with pagination and filters
+// @route   GET /api/admin/recipes
+// @access  Private/Admin
+exports.getAllRecipes = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      cuisine = '',
+      difficulty = '',
+      isVerified = '',
+      sortBy = 'createdAt',
+      order = 'desc'
+    } = req.query;
+
+    // Build query
+    const query = {};
+    
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (cuisine) {
+      query.cuisine = cuisine;
+    }
+
+    if (difficulty) {
+      query.difficulty = difficulty;
+    }
+
+    if (isVerified !== '') {
+      query.isVerified = isVerified === 'true';
+    }
+
+    // Execute query with pagination
+    const recipes = await Recipe.find(query)
+      .populate('author', 'username email')
+      .sort({ [sortBy]: order })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const count = await Recipe.countDocuments(query);
+
+    res.json({
+      recipes,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(count / limit),
+        total: count,
+        hasNext: count > page * limit,
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Get all recipes admin error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch recipes',
+      message: error.message
+    });
+  }
+};
+
+// @desc    Update any recipe (Admin only)
+// @route   PUT /api/admin/recipes/:id
+// @access  Private/Admin
+exports.updateRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).populate('author', 'username email');
+
+    if (!recipe) {
+      return res.status(404).json({
+        error: 'Recipe not found',
+        message: 'The specified recipe does not exist'
+      });
+    }
+
+    res.json({
+      message: 'Recipe updated successfully by admin',
+      recipe
+    });
+  } catch (error) {
+    console.error('Admin update recipe error:', error);
+    res.status(500).json({
+      error: 'Failed to update recipe',
+      message: error.message
+    });
+  }
+};
+
+// @desc    Delete any recipe (Admin only)
+// @route   DELETE /api/admin/recipes/:id
+// @access  Private/Admin
+exports.deleteRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findByIdAndDelete(req.params.id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        error: 'Recipe not found',
+        message: 'The specified recipe does not exist'
+      });
+    }
+
+    res.json({
+      message: 'Recipe deleted successfully by admin'
+    });
+  } catch (error) {
+    console.error('Admin delete recipe error:', error);
+    res.status(500).json({
+      error: 'Failed to delete recipe',
+      message: error.message
+    });
+  }
+};

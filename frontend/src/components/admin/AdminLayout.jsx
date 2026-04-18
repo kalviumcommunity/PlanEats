@@ -34,7 +34,7 @@ const AdminLayout = ({ children }) => {
     { path: '/admin/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/admin/analytics', label: 'Analytics', icon: <BarChart3 size={20} /> },
     { path: '/admin/users', label: 'Users', icon: <Users size={20} /> },
-    { path: '/admin/recipes', label: 'Recipes', icon: <Utensils size={20} /> },
+    { path: '/admin/recipes', label: 'Recipe Management', icon: <Utensils size={20} /> },
     { path: '/admin/settings', label: 'Settings', icon: <Settings size={20} /> },
   ];
 
