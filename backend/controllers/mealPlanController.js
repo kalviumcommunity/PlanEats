@@ -86,6 +86,7 @@ const generateAIPlan = async (req, res) => {
       ...aiPlan,
       user: req.user._id,
       aiGenerated: true,
+      targetNutrition, // Include the target nutrition goals from the request
       status: 'draft'
     };
 
@@ -139,7 +140,12 @@ const getMealPlanById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const mealPlan = await MealPlan.findById(id);
+    const mealPlan = await MealPlan.findById(id)
+      .populate('meals.breakfast.recipe')
+      .populate('meals.lunch.recipe')
+      .populate('meals.dinner.recipe')
+      .populate('meals.snacks.recipe');
+
 
     if (!mealPlan) {
       return res.status(404).json({

@@ -235,4 +235,26 @@
   .animate-delay-1000 {
     animation-delay: 1000ms;
   }
+
+  /* Floating animation */
+  @keyframes floating {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(5deg);
+    }
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+  }
+
+  .animate-floating {
+    animation: floating 6s ease-in-out infinite;
+  }
+
+  .bg-veggie {
+    @apply pointer-events-none fixed transition-all duration-1000;
+    filter: blur(1.5px);
+  }
 }

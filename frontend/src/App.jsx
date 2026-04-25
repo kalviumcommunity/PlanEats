@@ -6,6 +6,7 @@ import { useAuthStore } from './stores/authStore';
 import Navigation from './components/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import FloatingVeggies from './components/FloatingVeggies';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -16,6 +17,7 @@ import Recipes from './pages/Recipes';
 import RecipeDetails from './pages/RecipeDetails';
 import MealPlans from './pages/MealPlans';
 import MealPlanGenerator from './pages/MealPlanGenerator';
+import MealPlanDetails from './pages/MealPlanDetails';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
@@ -33,84 +35,93 @@ function App() {
   }, [initializeAuth]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
-      <Navigation />
-      
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route 
-          path="/login" 
-          element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Login />} 
-        />
-        <Route 
-          path="/register" 
-          element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Register />} 
-        />
+    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 relative overflow-hidden">
+      <FloatingVeggies />
+      <div className="relative z-10">
+        <Navigation />
         
-        {/* Public recipe browsing */}
-        <Route path="/recipes" element={<Recipes />} />
-        <Route path="/recipes/:id" element={<RecipeDetails />} />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route 
+            path="/login" 
+            element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Login />} 
+          />
+          <Route 
+            path="/register" 
+            element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Register />} 
+          />
+          
+          {/* Public recipe browsing */}
+          <Route path="/recipes" element={<Recipes />} />
+          <Route path="/recipes/:id" element={<RecipeDetails />} />
 
-        {/* Protected routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/meal-plans" element={
-          <ProtectedRoute>
-            <MealPlans />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/meal-plans/generate" element={
-          <ProtectedRoute>
-            <MealPlanGenerator />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
+          {/* Protected routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/meal-plans" element={
+            <ProtectedRoute>
+              <MealPlans />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/meal-plans/:id" element={
+            <ProtectedRoute>
+              <MealPlanDetails />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/meal-plans/generate" element={
+            <ProtectedRoute>
+              <MealPlanGenerator />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
 
-        {/* Admin routes - only accessible by admin users */}
-        <Route path="/admin/dashboard" element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        } />
-        
-        <Route path="/admin/analytics" element={
-          <AdminRoute>
-            <Analytics />
-          </AdminRoute>
-        } />
-        
-        <Route path="/admin/users" element={
-          <AdminRoute>
-            <UserManagement />
-          </AdminRoute>
-        } />
-        
-        <Route path="/admin/recipes" element={
-          <AdminRoute>
-            <RecipeManagement />
-          </AdminRoute>
-        } />
+          {/* Admin routes - only accessible by admin users */}
+          <Route path="/admin/dashboard" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/analytics" element={
+            <AdminRoute>
+              <Analytics />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/users" element={
+            <AdminRoute>
+              <UserManagement />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/recipes" element={
+            <AdminRoute>
+              <RecipeManagement />
+            </AdminRoute>
+          } />
 
-        <Route path="/admin/settings" element={
-          <AdminRoute>
-            <Settings />
-          </AdminRoute>
-        } />
+          <Route path="/admin/settings" element={
+            <AdminRoute>
+              <Settings />
+            </AdminRoute>
+          } />
 
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
     </div>
   );
 }

@@ -50,7 +50,7 @@ const mealPlanSchema = new mongoose.Schema({
   },
   dietaryRestrictions: {
     type: [String],
-    enum: ['vegan', 'vegetarian', 'keto', 'paleo', 'gluten-free', 'dairy-free', 'nut-free', 'low-carb', 'low-fat'],
+    enum: ['vegan', 'vegetarian', 'keto', 'paleo', 'gluten-free', 'dairy-free', 'nut-free', 'low-carb', 'low-fat', 'high-protein', 'low-sodium'],
     default: []
   },
   allergies: {

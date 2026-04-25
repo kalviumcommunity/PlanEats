@@ -182,9 +182,16 @@ router.post('/generate', auth, aiMealPlanValidation, handleValidationErrors, asy
 
     // Get user preferences
     const user = await User.findById(req.user._id);
-    const userDietaryPreferences = [...new Set([...dietaryPreferences, ...user.dietaryPreferences])];
-    const userAllergies = [...new Set([...allergies, ...user.allergies])];
-    const userExcludeIngredients = [...new Set([...excludeIngredients, ...user.dislikedIngredients])];
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'Authenticated user not found in database'
+      });
+    }
+
+    const userDietaryPreferences = [...new Set([...(dietaryPreferences || []), ...(user.dietaryPreferences || [])])];
+    const userAllergies = [...new Set([...(allergies || []), ...(user.allergies || [])])];
+    const userExcludeIngredients = [...new Set([...(excludeIngredients || []), ...(user.dislikedIngredients || [])])];
 
     // Create AI prompt parameters
     const aiParams = {
@@ -240,11 +247,24 @@ router.post('/generate', auth, aiMealPlanValidation, handleValidationErrors, asy
         nutritionalFocus: goals.join(', '),
         timestamp: new Date()
       },
+      targetNutrition: req.body.targetNutrition || user.nutritionGoals || {},
       status: 'active'
     };
 
+    console.log('--- SAVING MEAL PLAN DATA ---');
+    // console.log(JSON.stringify(mealPlanData, null, 2));
+
     const mealPlan = new MealPlan(mealPlanData);
-    await mealPlan.save();
+    try {
+      await mealPlan.save();
+    } catch (saveError) {
+      console.error('MEAL PLAN SAVE ERROR:', saveError);
+      return res.status(400).json({
+        error: 'Database Error',
+        message: 'Failed to save the generated meal plan',
+        details: saveError.errors ? Object.values(saveError.errors).map(e => e.message) : saveError.message
+      });
+    }
 
     const populatedMealPlan = await MealPlan.findById(mealPlan._id)
       .populate('user', 'username profile.firstName profile.lastName');
@@ -259,10 +279,11 @@ router.post('/generate', auth, aiMealPlanValidation, handleValidationErrors, asy
       }
     });
   } catch (error) {
-    console.error('Generate AI meal plan error:', error);
+    console.error('CRITICAL: Generate AI meal plan route error:', error);
     res.status(500).json({
       error: 'Failed to generate meal plan',
-      message: 'An error occurred while generating the AI meal plan'
+      message: error.message || 'An error occurred while generating the AI meal plan',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -338,6 +359,50 @@ router.delete('/:id', auth, validateObjectId(), async (req, res) => {
     res.status(500).json({
       error: 'Failed to delete meal plan',
       message: 'An error occurred while deleting the meal plan'
+    });
+  }
+});
+
+// @route   PUT /api/mealplans/:id/meals/:dayIndex/:mealType/complete
+// @desc    Update meal completion status
+// @access  Private
+router.put('/:id/meals/:dayIndex/:mealType/complete', auth, validateObjectId(), async (req, res) => {
+  try {
+    const { id, dayIndex, mealType } = req.params;
+    const { completed, rating } = req.body;
+
+    const mealPlan = await MealPlan.findById(id);
+
+    if (!mealPlan) {
+      return res.status(404).json({
+        error: 'Meal plan not found',
+        message: 'The requested meal plan does not exist'
+      });
+    }
+
+    if (mealPlan.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        error: 'Access denied',
+        message: 'You do not have access to this meal plan'
+      });
+    }
+
+    // Update meal completion using model method
+    await mealPlan.updateMealCompletion(parseInt(dayIndex), mealType, completed, rating);
+
+    // Return the updated meal plan populated
+    const updatedPlan = await MealPlan.findById(id)
+      .populate('meals.breakfast.recipe')
+      .populate('meals.lunch.recipe')
+      .populate('meals.dinner.recipe')
+      .populate('meals.snacks.recipe');
+
+    res.json(updatedPlan);
+  } catch (error) {
+    console.error('Update meal completion error:', error);
+    res.status(500).json({
+      error: 'Failed to update meal completion',
+      message: error.message || 'An error occurred while updating meal completion'
     });
   }
 });
