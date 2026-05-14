@@ -39,7 +39,11 @@ export const useAuthStore = create((set, get) => ({
           toast.success('Registration successful!');
           return data;
         } catch (error) {
-          const errorMessage = error.response?.data?.message || 'Registration failed';
+          // Extract detailed validation errors if available
+          const details = error.response?.data?.details;
+          const errorMessage = details && details.length > 0
+            ? details.map(d => d.msg).join('. ')
+            : error.response?.data?.message || 'Registration failed';
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           throw error;
